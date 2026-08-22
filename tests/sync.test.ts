@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { SYNC_DATA_MAX_CHARACTERS, SYNC_NOTE_MARKER } from "../src/constants";
+import { PLUGIN_ID, SYNC_DATA_MAX_CHARACTERS, SYNC_NOTE_MARKER } from "../src/constants";
 import {
   contentHash,
   createSyncedChannel,
   createSyncData,
   parseSyncNote,
   reconcileChannel,
-  renderSyncNote,
-  SyncDataError
+  renderSyncNote
 } from "../src/domain/sync";
 import { defaultSyncableSettings, validateSyncableSettings } from "../src/settings";
 import type { PublicationCacheFile } from "../src/types";
@@ -28,25 +27,27 @@ function publications(rank = "Q1"): PublicationCacheFile {
 }
 
 describe("Focus Columns synchronization data", () => {
-  it("round-trips a versioned synchronization note with valid checksums", () => {
-    const data = createSyncData("0.1.8");
-    data.channels.publications = createSyncedChannel(publications(), "installation-a");
-    data.channels.settings = createSyncedChannel(defaultSyncableSettings(), "installation-a");
+  it("round-trips a versioned note without device metadata", () => {
+    const data = createSyncData("1.0.0");
+    data.channels.publications = createSyncedChannel(publications());
+    data.channels.settings = createSyncedChannel(defaultSyncableSettings());
 
     const html = renderSyncNote(data);
-    const parsed = parseSyncNote(html, "0.1.8");
+    const parsed = parseSyncNote(html);
 
-    expect(parsed.migrated).toBe(false);
-    expect(parsed.value).toEqual(data);
+    expect(parsed).toEqual(data);
     expect(html).toContain("Do not edit");
     expect(html).not.toContain("secretKey");
+    expect(Object.keys(parsed.channels.publications || {})).toEqual([
+      "revision", "updatedAt", "baseHash", "contentHash", "data"
+    ]);
   });
 
   it("detects same-base offline edits as a conflict", () => {
     const base = publications("Q1");
-    const first = createSyncedChannel(base, "installation-a");
+    const first = createSyncedChannel(base);
     const deviceBHead = first.contentHash;
-    const remote = createSyncedChannel(publications("Q2"), "installation-a", first);
+    const remote = createSyncedChannel(publications("Q2"), first);
 
     expect(reconcileChannel(base, deviceBHead, remote, false)).toBe("pull");
     expect(reconcileChannel(publications("Q3"), deviceBHead, remote, false)).toBe("conflict");
@@ -54,9 +55,9 @@ describe("Focus Columns synchronization data", () => {
   });
 
   it("pulls several missed remote revisions when local data did not change", () => {
-    const first = createSyncedChannel(publications("Q1"), "installation-a");
-    const second = createSyncedChannel(publications("Q2"), "installation-a", first);
-    const third = createSyncedChannel(publications("Q3"), "installation-a", second);
+    const first = createSyncedChannel(publications("Q1"));
+    const second = createSyncedChannel(publications("Q2"), first);
+    const third = createSyncedChannel(publications("Q3"), second);
 
     expect(third.baseHash).toBe(second.contentHash);
     expect(reconcileChannel(publications("Q1"), first.contentHash, third, false)).toBe("pull");
@@ -67,12 +68,12 @@ describe("Focus Columns synchronization data", () => {
   });
 
   it("keeps publication and settings decisions independent", () => {
-    const publicationBase = createSyncedChannel(publications("Q1"), "installation-a");
-    const publicationRemote = createSyncedChannel(publications("Q2"), "installation-a", publicationBase);
+    const publicationBase = createSyncedChannel(publications("Q1"));
+    const publicationRemote = createSyncedChannel(publications("Q2"), publicationBase);
     const settings = defaultSyncableSettings();
-    const settingsBase = createSyncedChannel(settings, "installation-a");
+    const settingsBase = createSyncedChannel(settings);
     const remoteSettingsData = { ...settings, autoFetchMissing: false };
-    const settingsRemote = createSyncedChannel(remoteSettingsData, "installation-a", settingsBase);
+    const settingsRemote = createSyncedChannel(remoteSettingsData, settingsBase);
     const localSettingsData = { ...settings, endpoint: "https://www.easyscholar.cc/open/getPublicationRank" };
 
     expect(reconcileChannel(publications("Q1"), publicationBase.contentHash, publicationRemote, false))
@@ -82,38 +83,41 @@ describe("Focus Columns synchronization data", () => {
   });
 
   it("rejects damaged, oversized, and newer synchronization data", () => {
-    const data = createSyncData("0.1.8");
-    data.channels.publications = createSyncedChannel(publications(), "installation-a");
+    const data = createSyncData("1.0.0");
+    data.channels.publications = createSyncedChannel(publications());
     const damaged = renderSyncNote(data).replace("Q1", "Q4");
-    expect(() => parseSyncNote(damaged, "0.1.8"))
+    expect(() => parseSyncNote(damaged))
       .toThrowError(expect.objectContaining({ kind: "invalid" }));
 
     const newer = `<pre>${SYNC_NOTE_MARKER}\n${JSON.stringify({ ...data, schemaVersion: 2 })}</pre>`;
-    expect(() => parseSyncNote(newer, "0.1.8"))
+    expect(() => parseSyncNote(newer))
       .toThrowError(expect.objectContaining({ kind: "newer-schema" }));
 
     data.channels.settings = createSyncedChannel({
       ...defaultSyncableSettings(),
       mapSource: "x".repeat(SYNC_DATA_MAX_CHARACTERS)
-    }, "installation-a");
+    });
     expect(() => renderSyncNote(data))
       .toThrowError(expect.objectContaining({ kind: "too-large" }));
   });
 
-  it("migrates recognized old data in memory", () => {
-    const legacy = {
-      schemaVersion: 0,
-      pluginID: "focus-columns@lllateron.github.io",
-      writerID: "old-installation",
-      publications: publications()
+  it("rejects legacy and foreign synchronization identities", () => {
+    const data: any = createSyncData("1.0.0");
+    data.channels.publications = {
+      ...createSyncedChannel(publications()),
+      deviceMetadata: "must-not-sync"
     };
-    const html = `<pre>${SYNC_NOTE_MARKER}\n${JSON.stringify(legacy)}</pre>`;
+    const legacy = `<pre>${SYNC_NOTE_MARKER}\n${JSON.stringify(data)}</pre>`;
+    expect(() => parseSyncNote(legacy))
+      .toThrowError(expect.objectContaining({ kind: "invalid" }));
 
-    const parsed = parseSyncNote(html, "0.1.8");
-
-    expect(parsed.migrated).toBe(true);
-    expect(parsed.value.schemaVersion).toBe(1);
-    expect(parsed.value.channels.publications?.data).toEqual(publications());
+    const foreign = `<pre>${SYNC_NOTE_MARKER}\n${JSON.stringify({
+      ...createSyncData("1.0.0"),
+      pluginID: "another-plugin@example.invalid"
+    })}</pre>`;
+    expect(() => parseSyncNote(foreign))
+      .toThrowError(expect.objectContaining({ kind: "invalid" }));
+    expect(PLUGIN_ID).toBe("focus-columns@lllateron.github.io");
   });
 
   it("strictly rejects unknown synchronized settings such as credentials", () => {
@@ -124,12 +128,12 @@ describe("Focus Columns synchronization data", () => {
   });
 
   it("rejects unknown synchronization fields instead of carrying them forward", () => {
-    const data: any = createSyncData("0.1.8");
-    data.channels.publications = createSyncedChannel(publications(), "installation-a");
+    const data: any = createSyncData("1.0.0");
+    data.channels.publications = createSyncedChannel(publications());
     data.channels.credentials = { secretKey: "must-not-sync" };
     const html = `<pre>${SYNC_NOTE_MARKER}\n${JSON.stringify(data)}</pre>`;
 
-    expect(() => parseSyncNote(html, "0.1.8"))
+    expect(() => parseSyncNote(html))
       .toThrowError(expect.objectContaining({ kind: "invalid" }));
   });
 });

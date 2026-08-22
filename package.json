@@ -1,24 +1,27 @@
 {
   "name": "zotero-focus-columns",
-  "version": "0.1.9",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22"
+  },
   "description": "A small Zotero 10 plugin for publication ranks, hash tags, reading status, and remarks.",
   "scripts": {
     "clean": "node scripts/clean.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "verify:repository": "node scripts/verify-repository.mjs",
     "build": "node scripts/build.mjs",
     "verify:package": "node scripts/verify-package.mjs",
-    "verify": "npm run typecheck && npm run test && npm run build && npm run verify:package",
-    "migrate:cache": "node scripts/migrate-style-cache.mjs"
+    "verify": "npm run typecheck && npm run test && npm run verify:repository && npm run build && npm run verify:package"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.4",
-    "@types/archiver": "^6.0.3",
+    "@types/archiver": "^8.0.0",
     "@types/node": "^24.0.0",
-    "archiver": "^7.0.1",
+    "archiver": "^8.0.0",
     "rollup": "^4.46.0",
     "tslib": "^2.8.1",
     "typescript": "^5.9.0",

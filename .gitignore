@@ -3,16 +3,7 @@ node_modules/
 build/
 dist/
 coverage/
-migration-output/
-test/zotero-profile/
-test/zotero-data/
-test/logs/
-test/runtime-profile/
-test/runtime-data/
-test/runtime-logs/
-test/plugin-profile/
-test/plugin-data/
-test/plugin-logs/
+test/
 *.log
 *.xpi
 .DS_Store

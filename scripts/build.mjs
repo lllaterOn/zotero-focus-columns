@@ -1,9 +1,9 @@
 import { createWriteStream } from "node:fs";
-import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import typescript from "@rollup/plugin-typescript";
-import archiver from "archiver";
+import { ZipArchive } from "archiver";
 import { rollup } from "rollup";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -23,14 +23,14 @@ const bundle = await rollup({
     compilerOptions: {
       declaration: false,
       noEmit: false,
-      sourceMap: true
+      sourceMap: false
     }
   })]
 });
 await bundle.write({
   file: join(staging, "content", "focus-columns.js"),
   format: "iife",
-  sourcemap: true
+  sourcemap: false
 });
 await bundle.close();
 
@@ -40,16 +40,35 @@ const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
 manifest.version = packageJSON.version;
 await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n", "utf8");
 
-const xpiPath = join(dist, `focus-columns-${packageJSON.version}.xpi`);
+async function filesUnder(directory) {
+  const files = [];
+  for (const entry of (await readdir(directory, { withFileTypes: true }))
+    .sort((left, right) => left.name.localeCompare(right.name, "en"))) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) files.push(...await filesUnder(path));
+    else files.push(path);
+  }
+  return files;
+}
+
+const xpiPath = join(dist, `zotero-focus-columns-${packageJSON.version}.xpi`);
 await new Promise((resolve, reject) => {
   const output = createWriteStream(xpiPath);
-  const archive = archiver("zip", { zlib: { level: 9 } });
+  const archive = new ZipArchive({ zlib: { level: 9 } });
   output.on("close", resolve);
   output.on("error", reject);
   archive.on("error", reject);
   archive.pipe(output);
-  archive.directory(staging, false);
-  archive.finalize();
+  void (async () => {
+    for (const path of await filesUnder(staging)) {
+      archive.append(await readFile(path), {
+        date: new Date("2000-01-01T00:00:00.000Z"),
+        mode: 0o644,
+        name: relative(staging, path).replaceAll("\\", "/")
+      });
+    }
+    await archive.finalize();
+  })().catch(reject);
 });
 
 console.log(xpiPath);

@@ -34,13 +34,13 @@ function normalizedCache(value: PublicationCacheFile): PublicationCacheFile {
   const entries: Record<string, PublicationCacheEntry> = {};
   for (const [key, entry] of Object.entries(value.entries)) {
     const candidate = entry as Partial<PublicationCacheEntry>;
-    if (!candidate.publication || !isRankRecord(candidate.rank)) continue;
+    if (!candidate.publication
+      || !isRankRecord(candidate.rank)
+      || (candidate.source !== "easyscholar" && candidate.source !== "user-cleared")) continue;
     entries[normalizePublicationName(key)] = {
       publication: String(candidate.publication),
       rank: { ...candidate.rank },
-      source: candidate.source === "zotero-style-6.0.8-import"
-        ? "zotero-style-6.0.8-import"
-        : candidate.source === "user-cleared" ? "user-cleared" : "easyscholar",
+      source: candidate.source,
       fetchedAt: candidate.fetchedAt ? String(candidate.fetchedAt) : null
     };
   }

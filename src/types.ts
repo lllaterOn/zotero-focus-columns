@@ -4,7 +4,7 @@ export type RankRecord = Record<string, RankScalar>;
 export interface PublicationCacheEntry {
   publication: string;
   rank: RankRecord;
-  source: "easyscholar" | "zotero-style-6.0.8-import" | "user-cleared";
+  source: "easyscholar" | "user-cleared";
   fetchedAt: string | null;
 }
 

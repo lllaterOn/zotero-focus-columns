@@ -14,7 +14,6 @@ export type SyncChannelData = PublicationCacheFile | SyncableSettings;
 export interface SyncedChannel<T extends SyncChannelData> {
   revision: number;
   updatedAt: string;
-  writerID: string;
   baseHash: string | null;
   contentHash: string;
   data: T;
@@ -29,11 +28,6 @@ export interface FocusColumnsSyncData {
     publications?: SyncedChannel<PublicationCacheFile>;
     settings?: SyncedChannel<SyncableSettings>;
   };
-}
-
-export interface ParsedSyncData {
-  value: FocusColumnsSyncData;
-  migrated: boolean;
 }
 
 export type ReconcileAction = "equal" | "pull" | "push" | "conflict";
@@ -94,13 +88,11 @@ export function createSyncData(pluginVersion: string): FocusColumnsSyncData {
 
 export function createSyncedChannel<T extends SyncChannelData>(
   data: T,
-  writerID: string,
   previous?: SyncedChannel<T>
 ): SyncedChannel<T> {
   return {
     revision: (previous?.revision || 0) + 1,
     updatedAt: new Date().toISOString(),
-    writerID,
     baseHash: previous?.contentHash || null,
     contentHash: contentHash(data),
     data: JSON.parse(JSON.stringify(data)) as T
@@ -148,7 +140,7 @@ function validPublicationCache(value: unknown): value is PublicationCacheFile {
         || typeof rank === "number"
         || typeof rank === "boolean"
       ))
-      && ["easyscholar", "zotero-style-6.0.8-import", "user-cleared"].includes(entry.source)
+      && ["easyscholar", "user-cleared"].includes(entry.source)
       && (entry.fetchedAt === null || typeof entry.fetchedAt === "string")
     ));
 }
@@ -159,11 +151,10 @@ function validChannel<T extends SyncChannelData>(
 ): value is SyncedChannel<T> {
   if (!value || typeof value !== "object") return false;
   const candidate = value as Partial<SyncedChannel<T>>;
-  return hasOnlyKeys(candidate, ["revision", "updatedAt", "writerID", "baseHash", "contentHash", "data"])
+  return hasOnlyKeys(candidate, ["revision", "updatedAt", "baseHash", "contentHash", "data"])
     && Number.isInteger(candidate.revision)
     && Number(candidate.revision) > 0
     && typeof candidate.updatedAt === "string"
-    && typeof candidate.writerID === "string"
     && (candidate.baseHash === null || typeof candidate.baseHash === "string")
     && typeof candidate.contentHash === "string"
     && validateData(candidate.data)
@@ -203,19 +194,6 @@ function validateCurrent(value: unknown): FocusColumnsSyncData {
   return candidate as FocusColumnsSyncData;
 }
 
-function migrateLegacy(value: any, pluginVersion: string): FocusColumnsSyncData | null {
-  if (!value || value.schemaVersion !== 0 || value.pluginID !== PLUGIN_ID) return null;
-  const writerID = typeof value.writerID === "string" ? value.writerID : "legacy";
-  const migrated = createSyncData(pluginVersion);
-  if (validPublicationCache(value.publications)) {
-    migrated.channels.publications = createSyncedChannel(value.publications, writerID);
-  }
-  if (validSettings(value.settings)) {
-    migrated.channels.settings = createSyncedChannel(value.settings, writerID);
-  }
-  return migrated;
-}
-
 function escapeHTML(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -243,7 +221,7 @@ export function renderSyncNote(value: FocusColumnsSyncData): string {
   return html;
 }
 
-export function parseSyncNote(html: string, pluginVersion: string): ParsedSyncData {
+export function parseSyncNote(html: string): FocusColumnsSyncData {
   const blocks = [...String(html).matchAll(/<pre\b[^>]*>([\s\S]*?)<\/pre>/gi)];
   const block = blocks.map(match => decodeHTML(match[1])).find(text => text.includes(SYNC_NOTE_MARKER));
   if (!block) throw new SyncDataError("missing");
@@ -257,8 +235,5 @@ export function parseSyncNote(html: string, pluginVersion: string): ParsedSyncDa
     throw new SyncDataError("invalid");
   }
   if (Number((parsed as any)?.schemaVersion) > 1) throw new SyncDataError("newer-schema");
-  const legacy = migrateLegacy(parsed, pluginVersion);
-  return legacy
-    ? { value: legacy, migrated: true }
-    : { value: validateCurrent(parsed), migrated: false };
+  return validateCurrent(parsed);
 }

@@ -101,7 +101,6 @@ describe("SyncService Zotero object workflow", () => {
     }
 
     (globalThis as any).Services = {
-      uuid: { generateUUID: () => "{installation-test}" },
       prompt: {
         confirm: vi.fn(() => true),
         confirmEx: vi.fn(() => 0),
@@ -131,8 +130,8 @@ describe("SyncService Zotero object workflow", () => {
 
   it("automatically imports existing publication data on a pristine new computer", async () => {
     setSyncPreferences(true);
-    const syncData = createSyncData("0.1.8");
-    syncData.channels.publications = createSyncedChannel(publications("Q2"), "other-installation");
+    const syncData = createSyncData("1.0.0");
+    syncData.channels.publications = createSyncedChannel(publications("Q2"));
     addExistingObjects(renderSyncNote(syncData));
     const localCache = cache({
       schemaVersion: 1,
@@ -140,7 +139,7 @@ describe("SyncService Zotero object workflow", () => {
       entries: {}
     });
     const backups = { create: vi.fn(), latest: vi.fn() };
-    const service = new SyncService(localCache as any, "0.1.8", vi.fn(), backups as any);
+    const service = new SyncService(localCache as any, "1.0.0", vi.fn(), backups as any);
 
     await service.start();
 
@@ -155,7 +154,7 @@ describe("SyncService Zotero object workflow", () => {
     const localCache = cache(publications());
     const service = new SyncService(
       localCache as any,
-      "0.1.8",
+      "1.0.0",
       vi.fn(),
       { create: vi.fn(), latest: vi.fn() } as any
     );
@@ -169,9 +168,12 @@ describe("SyncService Zotero object workflow", () => {
     expect(Item).toHaveBeenCalledTimes(2);
     expect(status.state).toBe("ready");
     const note = [...items.values()].find(candidate => candidate.itemType === "note");
-    const parsed = parseSyncNote(note.getNote(), "0.1.8");
-    expect(parsed.value.channels.publications?.data).toEqual(publications());
+    const parsed = parseSyncNote(note.getNote());
+    expect(parsed.channels.publications?.data).toEqual(publications());
     expect(note.getNote()).not.toContain("secretKey");
+    expect(Object.keys(parsed.channels.publications || {})).toEqual([
+      "revision", "updatedAt", "baseHash", "contentHash", "data"
+    ]);
     await service.stop();
   });
 
@@ -180,7 +182,7 @@ describe("SyncService Zotero object workflow", () => {
     (Services.prompt.confirm as any).mockReturnValue(false);
     const service = new SyncService(
       localCache as any,
-      "0.1.8",
+      "1.0.0",
       vi.fn(),
       { create: vi.fn(), latest: vi.fn() } as any
     );
@@ -197,7 +199,7 @@ describe("SyncService Zotero object workflow", () => {
     preferences.set(`${PREF_BRANCH}sync.runtime.everConnected`, true);
     const service = new SyncService(
       cache(publications()) as any,
-      "0.1.8",
+      "1.0.0",
       vi.fn(),
       { create: vi.fn(), latest: vi.fn() } as any
     );
@@ -214,7 +216,7 @@ describe("SyncService Zotero object workflow", () => {
     addExistingObjects("<p><strong>Focus Columns</strong></p><p>damaged</p>");
     const service = new SyncService(
       cache(publications()) as any,
-      "0.1.8",
+      "1.0.0",
       vi.fn(),
       { create: vi.fn(), latest: vi.fn() } as any
     );
@@ -227,8 +229,8 @@ describe("SyncService Zotero object workflow", () => {
 
   it("blocks duplicate shared containers", async () => {
     setSyncPreferences(true);
-    const syncData = createSyncData("0.1.8");
-    syncData.channels.publications = createSyncedChannel(publications(), "installation-a");
+    const syncData = createSyncData("1.0.0");
+    syncData.channels.publications = createSyncedChannel(publications());
     addExistingObjects(renderSyncNote(syncData));
     items.set(3, {
       id: 3,
@@ -240,7 +242,7 @@ describe("SyncService Zotero object workflow", () => {
     searchIDs = [1, 3];
     const service = new SyncService(
       cache(publications()) as any,
-      "0.1.8",
+      "1.0.0",
       vi.fn(),
       { create: vi.fn(), latest: vi.fn() } as any
     );
@@ -253,8 +255,8 @@ describe("SyncService Zotero object workflow", () => {
 
   it("blocks duplicate Focus Columns synchronization notes", async () => {
     setSyncPreferences(true);
-    const syncData = createSyncData("0.1.8");
-    syncData.channels.publications = createSyncedChannel(publications(), "installation-a");
+    const syncData = createSyncData("1.0.0");
+    syncData.channels.publications = createSyncedChannel(publications());
     const html = renderSyncNote(syncData);
     addExistingObjects(html);
     items.get(1).getNotes = () => [2, 3];
@@ -267,7 +269,7 @@ describe("SyncService Zotero object workflow", () => {
     });
     const service = new SyncService(
       cache(publications()) as any,
-      "0.1.8",
+      "1.0.0",
       vi.fn(),
       { create: vi.fn(), latest: vi.fn() } as any
     );
@@ -279,14 +281,14 @@ describe("SyncService Zotero object workflow", () => {
 
   it("continues the publication channel while only settings are conflicted", async () => {
     setSyncPreferences(true, true, true);
-    const publicationBase = createSyncedChannel(publications("Q1"), "installation-a");
-    const publicationRemote = createSyncedChannel(publications("Q2"), "installation-a", publicationBase);
-    const settingsBase = createSyncedChannel(defaultSyncableSettings(), "installation-a");
+    const publicationBase = createSyncedChannel(publications("Q1"));
+    const publicationRemote = createSyncedChannel(publications("Q2"), publicationBase);
+    const settingsBase = createSyncedChannel(defaultSyncableSettings());
     const settingsRemote = createSyncedChannel({
       ...defaultSyncableSettings(),
       endpoint: "https://www.easyscholar.cc/open/getPublicationRank"
-    }, "installation-a", settingsBase);
-    const syncData = createSyncData("0.1.8");
+    }, settingsBase);
+    const syncData = createSyncData("1.0.0");
     syncData.channels.publications = publicationRemote;
     syncData.channels.settings = settingsRemote;
     addExistingObjects(renderSyncNote(syncData));
@@ -296,7 +298,7 @@ describe("SyncService Zotero object workflow", () => {
     const localCache = cache(publications("Q1"));
     const service = new SyncService(
       localCache as any,
-      "0.1.8",
+      "1.0.0",
       vi.fn(),
       { create: vi.fn(), latest: vi.fn() } as any
     );

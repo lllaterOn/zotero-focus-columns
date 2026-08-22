@@ -1,10 +1,10 @@
 export const PLUGIN_ID = "focus-columns@lllateron.github.io";
-export const PREF_BRANCH = "extensions.zotero.focus-columns.";
+export const PREF_BRANCH = "extensions.zotero.lllateron.focusColumns.";
 export const CACHE_FILE_NAME = "focus-columns-publications.json";
 export const BACKUP_DIRECTORY_NAME = "focus-columns-backups";
 export const SYNC_CONTAINER_MARKER = "personal-zotero-addons-container: 1";
 export const SYNC_CONTAINER_TITLE = "Personal Zotero Addons";
-export const SYNC_NOTE_MARKER = "FOCUS_COLUMNS_SYNC_DATA_V1";
+export const SYNC_NOTE_MARKER = "FOCUS_COLUMNS_SYNC_DATA";
 export const SYNC_NOTE_TITLE = "Focus Columns";
 export const SYNC_DATA_MAX_CHARACTERS = 350_000;
 

@@ -1,5 +1,5 @@
 var FocusColumnsPreferences = {
-  branch: "extensions.zotero.focus-columns.",
+  branch: "extensions.zotero.lllateron.focusColumns.",
   initialized: false,
   strings: {
     "zh-CN": {

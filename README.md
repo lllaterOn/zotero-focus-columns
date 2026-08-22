@@ -1,122 +1,79 @@
 # Focus Columns
 
-Focus Columns is an independent Zotero 10 plugin for a compact personal literature workflow. It does not contain code copied from Ethereal Style 6.0.8 or its obfuscated bundle.
+Focus Columns 是一个面向 Zotero 10 的独立插件，为个人文献工作流提供四个紧凑的条目列表列、两个条目面板信息行，以及可选的跨电脑同步。
 
-## Included
+本仓库是私人软件仓库。版权所有，未授予公开复制、分发或再许可权限。
 
-- Publication tags from an on-disk cache and EasyScholar cache-miss requests
-- All native Zotero tags whose names begin with `#`, with only the first `#` hidden in the column
-- One mutually exclusive status chosen from the library's colored `/` tags
-- A remark stored in the item's `Extra` field as `remark: <text>`
-- Independent item-tree and item-pane switches for publication tags and remarks
-- Manual publication refresh for selected items
-- Confirmed removal of selected publications' cached tags, with manual refresh available to restore them
-- Optional cross-computer synchronization through a user-visible note in the personal Zotero library
-- An icon-bearing official Zotero item-menu command in its own custom menu group
-- A shared SVG icon in the Zotero preferences sidebar
+## 功能
 
-The six feature switches are registered independently. The item-pane rows use Zotero's official info-row API: the remark is placed at the start of the Info section, while publication ranks use the nearest supported position after creators. Info rows are plain text because this API accepts strings only; exact placement after an individual built-in field and colored inline badges would require unsupported DOM injection.
+- **期刊标签列**：从本地缓存读取期刊分级；缓存缺失时可通过用户自行配置的 EasyScholar 密钥获取。支持批量更新和确认删除，手动删除的结果不会被自动补全立即恢复。
+- **#标签列**：显示原生 Zotero 标签中以 `#` 开头的标签，并在列中隐藏第一个 `#`。
+- **状态列**：使用原生彩色 `/` 标签；`/yes`、`/ing`、`/no` 属于互斥状态组。
+- **简记列**：将简记保存在条目 `Extra` 字段的 `remark:` 行，同时保留其他内容。
+- **条目面板**：通过 Zotero 官方 `ItemPaneInfoRow` API 显示期刊标签和简记。
+- **跨电脑同步**：可独立同步期刊标签和非敏感插件设置，网络上传与下载由 Zotero 自身负责。
 
-## Column Sorting
+四个条目列表列和两个条目面板信息行具有彼此独立的开关。
 
-Clicking a custom column header uses these primary values:
+## 兼容性与已知限制
 
-- Publication tags: the advanced `Sort` specification, by default `sci,-sciif` (SCI rank ascending, then impact factor descending)
-- `#` tags: the displayed tag texts in their displayed order
-- Status: the full native `/` tag name
-- Remark: the remark text
+- 支持 Zotero `10.0.*`。
+- 条目面板使用官方信息行 API。Zotero 10 只提供 `start`、`afterCreators` 和 `end` 三个位置，并且信息行只能返回字符串，因此不能精确插入任意原生字段之后，也不能显示彩色内联徽章。
+- 同一主排序值的条目继续使用 Zotero 的次级和后备排序；插件不会把条目 ID 塞入排序键。
+- 私人 GitHub Release 无法被 Zotero 匿名更新器访问，因此本项目不提供原生自动更新。
 
-Empty cells follow Zotero's normal empty-value placement. Rows with the same primary value continue through Zotero's configured secondary and fallback fields; no hidden item ID is included in the sort key.
+## 安装与更新
 
-Zotero's native Added and Modified columns are intentionally unchanged. AI remarks, nested tags, rating, translation, views, and other Ethereal Style features are outside this project.
+1. 登录拥有本私人仓库访问权限的 GitHub 账户。
+2. 打开仓库的 **Releases** 页面，下载 `zotero-focus-columns-<version>.xpi`。
+3. 在 Zotero 中打开“工具 → 插件”，从文件安装 XPI。
+4. 更新版本时下载新的 XPI，并重复从文件安装。
 
-## Development
+安装后在 Zotero 设置中打开 **Focus Columns**，按需启用六个功能开关并填写本机 EasyScholar 密钥。
+
+## 跨电脑同步
+
+同步默认关闭。“同步期刊标签”和“同步插件设置”可以独立选择。
+
+启用后，插件在个人文献库中使用以下可见对象：
+
+- 父条目类型：软件；默认标题：`Personal Zotero Addons`
+- 父条目 `Extra` 标记：`personal-zotero-addons-container: 1`
+- Focus Columns 子笔记标题：`Focus Columns`
+
+同步笔记只保存期刊标签、允许同步的设置、内容哈希和修订信息，不保存 EasyScholar 密钥、同步开关、本机连接信息或设备标识。关闭同步或卸载插件不会删除共享条目和子笔记。对象被移入回收站后，插件会暂停，而不是静默创建替代品。
+
+插件只更新本机 Zotero 笔记。需要立即上传或下载时，请使用 Zotero 自带的同步按钮。另一台电脑应先完成 Zotero 同步，再安装并启用插件。两端同时修改同一同步内容时，插件会要求选择保留完整的本机版本或 Zotero 版本，不做静默合并。
+
+## 本机数据
+
+- 期刊缓存：`<Zotero data directory>/focus-columns-publications.json`
+- 同步备份：`<Zotero data directory>/focus-columns-backups/`
+- 简记：条目 `Extra` 中的一行 `remark: <text>`
+- 状态和 `#` 标签：原生 Zotero 标签
+- EasyScholar 密钥：仅保存在本机 Zotero 首选项中
+
+本机 Zotero 数据、数据库、缓存、日志、密钥和运行 profile 不属于软件仓库，也不得提交到 Git。
+
+## 开发与维护
+
+要求 Node.js 22 或更高版本：
 
 ```powershell
-npm install
+npm ci
 npm run verify
 ```
 
-The packaged extension is written to `dist/focus-columns-<version>.xpi`.
+完整验证包括类型检查、自动测试、仓库卫生检查、构建和 XPI 内容检查。构建产物位于：
 
-Version 0.1.5 uses Zotero's official `MenuManager` for the item context-menu command. Zotero
-places the command in the custom-menu group and supplies the group separator. The icon is the
-single-color `content/icons/focus-columns.svg` resource used by both the menu and preferences.
-
-Version 0.1.6 restores EasyScholar requests in Zotero 10 by importing `AbortController`
-into the plugin sandbox and using a cancellable 20-second timeout. EasyScholar business errors
-are no longer treated as empty data. Manual updates stop on the first systemic failure, preserve
-existing cache entries, and show a specific message without exposing the key or request URL.
-
-Version 0.1.7 adds a second official item-menu command for deleting the publication tags of
-selected items. The operation is confirmed once per batch, deduplicates publication names, and
-atomically persists user-cleared markers so automatic cache-miss requests do not restore deleted
-tags. A later manual update restores the current EasyScholar data.
-
-Version 0.1.8 adds opt-in synchronization for publication tags and non-secret plugin settings.
-The two channels are controlled independently on each computer; publication synchronization is
-selected by default and settings synchronization is not. Focus Columns stores its data in a
-visible child note under a shared item in the personal library. Zotero, not this plugin, performs
-network synchronization. EasyScholar keys are never written to the note or local synchronization
-backups.
-
-Version 0.1.9 reorganizes the synchronization explanation and live status into a concise summary,
-muted minute-level timestamps, and a separate error detail. Publication counts now explicitly
-distinguish the local cache from the synchronization note; the synchronization data format is
-unchanged.
-
-## Cross-Computer Synchronization
-
-Synchronization is off by default. Enabling it searches the personal library before creating
-anything, so a new computer can connect to an item already downloaded by Zotero. The final
-creation or import plan is shown before any new Zotero item is saved. Local changes are written to
-the local Zotero note after a short delay; use Zotero's own Sync button when an immediate network
-transfer is needed.
-
-The shared container contract is intentionally small so later personal plugins can reuse it:
-
-- Item type: Software (`computerProgram`)
-- Default title: `Personal Zotero Addons` (the user may rename or move it)
-- Exact `Extra` marker line: `personal-zotero-addons-container: 1`
-- One child note per plugin; the visible title for this plugin is `Focus Columns`
-- Stable plugin identifier inside the note: `focus-columns@lllateron.github.io`
-
-Focus Columns only reads and writes its own child note. Duplicate containers or duplicate Focus
-Columns notes pause synchronization for manual resolution. A connected item or note that is moved
-to the trash is not silently recreated. Turning synchronization off or uninstalling the plugin
-does not delete Zotero data.
-
-Each synchronized channel has its own revision, last-known content hash, and conflict state.
-When both the local and Zotero versions changed, the user chooses which complete version to keep;
-the other channel continues independently. Before Zotero data replaces local data, a credential-
-free backup is written under `<Zotero data directory>/focus-columns-backups/`. The newest three
-backups per channel are retained and can be restored from preferences.
-
-The note format is versioned and validated. Focus Columns stops rather than overwriting data from
-a newer format, damaged content, or content above the conservative 350,000-character limit.
-Settings synchronization excludes the EasyScholar key and all local synchronization controls.
-
-## Cache Migration
-
-Migration is an external command, not a plugin feature:
-
-```powershell
-npm run migrate:cache -- --input "C:\path\to\zoterostyle.json"
+```text
+dist/zotero-focus-columns-<version>.xpi
 ```
 
-This creates a new cache and report under `migration-output/`. The input file is not changed. Copy the verified cache to the active Zotero data directory as `focus-columns-publications.json` only after testing with an isolated Zotero profile.
+推荐的多端工作流：
 
-## Data Contracts
+```text
+拉取 main → 创建 codex/<task> → 修改并验证 → 提交并推送 → PR → 合并
+```
 
-- Publication cache: `<Zotero data directory>/focus-columns-publications.json`
-- User-cleared publication ranks remain as empty `user-cleared` cache entries until manually updated
-- Remark: one `remark:` line in `Extra`; every non-remark line is preserved
-- Status and `#` tags: native Zotero tags
-- Secret key: local preference only; plaintext at rest, masked in the settings UI
-- Synchronization controls, connected item IDs, and anonymous installation ID: local preferences only
-- Local synchronization backups: `<Zotero data directory>/focus-columns-backups/`
-
-Manual release acceptance for version 0.1.9 is documented in
-[`docs/MANUAL_ACCEPTANCE_0.1.9.md`](docs/MANUAL_ACCEPTANCE_0.1.9.md).
-
-This repository is private and unlicensed for redistribution.
+切换电脑前先提交并推送；另一台电脑开始工作前先拉取 `main`。详细合同见 [架构说明](docs/ARCHITECTURE.md)、[开发说明](docs/DEVELOPMENT.md) 和 [1.0.0 人工验收清单](docs/MANUAL_ACCEPTANCE_1.0.0.md)。

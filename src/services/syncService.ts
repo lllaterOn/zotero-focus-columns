@@ -133,7 +133,6 @@ function personalLibraryID(): number {
 
 export class SyncService {
   private readonly backupStore: SyncBackupStore;
-  private readonly installationID: string;
   private pluginVersion: string;
   private status: SyncStatus;
   private operationChain: Promise<void> = Promise.resolve();
@@ -151,7 +150,6 @@ export class SyncService {
   ) {
     this.pluginVersion = pluginVersion;
     this.backupStore = backupStore;
-    this.installationID = this.ensureInstallationID();
     this.status = this.initialStatus();
   }
 
@@ -487,7 +485,7 @@ export class SyncService {
       return;
     }
     if (decision.action === "push") {
-      const channel = createSyncedChannel(decision.local, this.installationID, decision.remote);
+      const channel = createSyncedChannel(decision.local, decision.remote);
       (objects.data.channels as any)[decision.channel] = channel;
       objects.data.pluginVersion = this.pluginVersion;
       objects.data.updatedAt = new Date().toISOString();
@@ -557,7 +555,7 @@ export class SyncService {
     const notes = titledNotes.filter((note: any) => noteHasMarker(note));
     if (notes.length > 1) throw new Error("duplicate-note");
     if (!notes.length) {
-      if (titledNotes.length === 1) parseSyncNote(titledNotes[0].getNote(), this.pluginVersion);
+      if (titledNotes.length === 1) parseSyncNote(titledNotes[0].getNote());
       if (runtimePref("everConnected") === "true") throw new Error("missing-note");
       throw new Error(`uninitialized-note:${container.id}`);
     }
@@ -568,11 +566,11 @@ export class SyncService {
       && itemKey(note) !== connectedNoteKey) {
       throw new Error("missing-note");
     }
-    const parsed = parseSyncNote(note.getNote(), this.pluginVersion);
+    const data = parseSyncNote(note.getNote());
     return {
       container,
       note,
-      data: parsed.value,
+      data,
       containerStatus: "found",
       noteStatus: "found"
     };
@@ -743,11 +741,4 @@ export class SyncService {
     return task;
   }
 
-  private ensureInstallationID(): string {
-    const existing = runtimePref("installationID");
-    if (existing) return existing;
-    const generated = String(Services.uuid.generateUUID()).replace(/[{}]/g, "");
-    setRuntimePref("installationID", generated);
-    return generated;
-  }
 }
