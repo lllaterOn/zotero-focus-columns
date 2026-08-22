@@ -1,0 +1,26 @@
+node_modules/
+.npm-cache/
+build/
+dist/
+coverage/
+migration-output/
+test/zotero-profile/
+test/zotero-data/
+test/logs/
+test/runtime-profile/
+test/runtime-data/
+test/runtime-logs/
+test/plugin-profile/
+test/plugin-data/
+test/plugin-logs/
+*.log
+*.xpi
+.DS_Store
+
+# Secrets and local overrides
+.env
+.env.*
+!.env.example
+local-settings.json
+*secret*
+*apikey*

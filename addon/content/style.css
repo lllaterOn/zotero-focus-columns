@@ -1,0 +1,123 @@
+.focus-columns-cell {
+  align-items: center;
+  box-sizing: border-box;
+  display: flex;
+  gap: 4px;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+  padding: 2px 5px;
+  white-space: nowrap;
+}
+
+.focus-columns-interactive {
+  cursor: pointer;
+}
+
+.focus-columns-cell-centered {
+  justify-content: center;
+}
+
+.focus-columns-badge,
+.focus-columns-status-pill {
+  align-items: center;
+  border-radius: 5px;
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0.92em;
+  gap: 5px;
+  line-height: 1.25;
+  max-width: 100%;
+  min-height: 20px;
+  overflow: hidden;
+  padding: 2px 6px;
+  text-overflow: ellipsis;
+}
+
+.focus-columns-swatch {
+  border-radius: 50%;
+  display: inline-block;
+  flex: 0 0 9px;
+  height: 9px;
+  width: 9px;
+}
+
+.focus-columns-panel {
+  --panel-padding: 6px;
+  max-width: calc(100vw - 16px);
+  padding: var(--panel-padding);
+}
+
+.focus-columns-status-panel,
+.focus-columns-option-list {
+  width: max-content;
+}
+
+.focus-columns-option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: min(280px, calc(100vw - 32px));
+}
+
+.focus-columns-option {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  color: inherit;
+  display: flex;
+  font: inherit;
+  gap: 8px;
+  min-height: 30px;
+  padding: 4px 8px;
+  text-align: start;
+  width: 100%;
+}
+
+.focus-columns-option:hover,
+.focus-columns-option:focus-visible,
+.focus-columns-option[aria-checked="true"] {
+  background: color-mix(in srgb, currentColor 11%, transparent);
+  outline: none;
+}
+
+.focus-columns-divider {
+  border-top: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  margin: 4px 2px;
+}
+
+.focus-columns-remark-panel {
+  width: auto;
+}
+
+.focus-columns-remark-form {
+  display: grid;
+  gap: 8px;
+  width: min(360px, calc(100vw - 40px));
+}
+
+.focus-columns-remark-input {
+  box-sizing: border-box;
+  font: inherit;
+  min-height: 32px;
+  min-width: 0;
+  width: 100%;
+}
+
+.focus-columns-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.focus-columns-actions button {
+  font: inherit;
+  min-height: 28px;
+}
+
+.focus-columns-primary-button {
+  font-weight: 600;
+}

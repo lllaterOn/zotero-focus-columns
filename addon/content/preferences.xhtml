@@ -1,0 +1,104 @@
+<vbox id="focus-columns-preferences-root"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml">
+  <html:main class="focus-preferences">
+    <html:section class="focus-preferences-section">
+      <html:h2 data-focus-i18n="featuresHeading">功能</html:h2>
+      <html:div class="focus-feature-groups">
+        <html:section class="focus-feature-group">
+          <html:h3 data-focus-i18n="columnsHeading">条目列表列</html:h3>
+          <html:div class="focus-toggle-list">
+            <html:label><html:input type="checkbox" data-pref="feature.publicationColumn"/> <html:span data-focus-i18n="publicationColumn">期刊标签列</html:span></html:label>
+            <html:label><html:input type="checkbox" data-pref="feature.hashTagsColumn"/> <html:span data-focus-i18n="hashTagsColumn">#标签列</html:span></html:label>
+            <html:label><html:input type="checkbox" data-pref="feature.statusColumn"/> <html:span data-focus-i18n="statusColumn">状态列</html:span></html:label>
+            <html:label><html:input type="checkbox" data-pref="feature.remarkColumn"/> <html:span data-focus-i18n="remarkColumn">简记列</html:span></html:label>
+          </html:div>
+        </html:section>
+        <html:section class="focus-feature-group">
+          <html:h3 data-focus-i18n="itemPaneHeading">条目面板</html:h3>
+          <html:div class="focus-toggle-list">
+            <html:label><html:input type="checkbox" data-pref="feature.publicationInfoRow"/> <html:span data-focus-i18n="publicationInfoRow">期刊标签</html:span></html:label>
+            <html:label><html:input type="checkbox" data-pref="feature.remarkInfoRow"/> <html:span data-focus-i18n="remarkInfoRow">简记</html:span></html:label>
+          </html:div>
+        </html:section>
+      </html:div>
+    </html:section>
+
+    <html:section class="focus-preferences-section">
+      <html:h2>EasyScholar</html:h2>
+      <html:div class="focus-form-grid">
+        <html:label for="focus-secret-key" data-focus-i18n="secretKey">密钥</html:label>
+        <html:input id="focus-secret-key" type="password" autocomplete="off" spellcheck="false"/>
+        <html:label class="focus-checkbox-row">
+          <html:input id="focus-auto-fetch" type="checkbox" data-pref="easyscholar.autoFetchMissing"/>
+          <html:span data-focus-i18n="autoFetch">自动补全缓存缺失项</html:span>
+        </html:label>
+      </html:div>
+    </html:section>
+
+    <html:section class="focus-preferences-section" id="focus-sync-section">
+      <html:h2 data-focus-i18n="syncHeading">跨电脑同步</html:h2>
+      <html:div class="focus-sync-controls">
+        <html:label class="focus-checkbox-row focus-sync-master">
+          <html:input id="focus-sync-enabled" type="checkbox" data-sync-pref="enabled"/>
+          <html:span data-focus-i18n="syncEnabled">启用 Focus Columns 同步</html:span>
+        </html:label>
+        <html:div id="focus-sync-channels" class="focus-toggle-list">
+          <html:label>
+            <html:input id="focus-sync-publications" type="checkbox" data-sync-pref="publications"/>
+            <html:span data-focus-i18n="syncPublications">同步期刊标签</html:span>
+          </html:label>
+          <html:label>
+            <html:input id="focus-sync-settings" type="checkbox" data-sync-pref="settings"/>
+            <html:span data-focus-i18n="syncSettings">同步插件设置</html:span>
+          </html:label>
+        </html:div>
+      </html:div>
+      <html:p class="focus-sync-notice" data-focus-i18n="syncNotice">同步数据保存在个人文献库的可见笔记中，并由 Zotero 负责网络同步；期刊名称和插件设置可能出现在 Zotero 网页端及备份中，EasyScholar 密钥仅保存在本机。</html:p>
+      <html:div id="focus-sync-status" class="focus-sync-status" role="status" aria-live="polite" aria-atomic="true">
+        <html:div class="focus-sync-summary">
+          <html:span id="focus-sync-state"></html:span>
+          <html:span id="focus-sync-publications-summary"></html:span>
+          <html:span id="focus-sync-settings-summary"></html:span>
+        </html:div>
+        <html:div class="focus-sync-meta">
+          <html:span id="focus-sync-updated"></html:span>
+          <html:span id="focus-sync-checked"></html:span>
+        </html:div>
+        <html:div id="focus-sync-detail" class="focus-sync-detail" hidden="hidden"></html:div>
+      </html:div>
+      <html:div class="focus-sync-actions">
+        <html:button id="focus-sync-check" type="button" data-focus-i18n="syncCheck">立即检查同步数据</html:button>
+        <html:button id="focus-sync-restore-publications" type="button" data-focus-i18n="restorePublications">恢复期刊标签备份</html:button>
+        <html:button id="focus-sync-restore-settings" type="button" data-focus-i18n="restoreSettings">恢复设置备份</html:button>
+      </html:div>
+    </html:section>
+
+    <html:details class="focus-advanced">
+      <html:summary data-focus-i18n="advancedHeading">高级设置</html:summary>
+      <html:div class="focus-form-grid focus-advanced-grid">
+        <html:label for="focus-fields" data-focus-i18n="fields">字段</html:label>
+        <html:input id="focus-fields" type="text" spellcheck="false"/>
+        <html:label for="focus-sort" data-focus-i18n="sort">排序</html:label>
+        <html:input id="focus-sort" type="text" spellcheck="false"/>
+        <html:label for="focus-map" data-focus-i18n="map">映射</html:label>
+        <html:textarea id="focus-map" rows="12" spellcheck="false"></html:textarea>
+        <html:label data-focus-i18n="rankColors">分级颜色</html:label>
+        <html:div id="focus-rank-colors" class="focus-color-row">
+          <html:input type="color" aria-label="1"/><html:input type="color" aria-label="2"/><html:input type="color" aria-label="3"/><html:input type="color" aria-label="4"/><html:input type="color" aria-label="5"/>
+        </html:div>
+        <html:label for="focus-default-color" data-focus-i18n="defaultColor">默认颜色</html:label>
+        <html:input id="focus-default-color" type="color"/>
+        <html:label for="focus-hash-color" data-focus-i18n="hashColor">#标签默认颜色</html:label>
+        <html:input id="focus-hash-color" type="color"/>
+        <html:label for="focus-endpoint" data-focus-i18n="endpoint">接口</html:label>
+        <html:input id="focus-endpoint" type="url" spellcheck="false"/>
+      </html:div>
+    </html:details>
+
+    <html:div class="focus-footer">
+      <html:span id="focus-preferences-status" role="status" aria-live="polite"></html:span>
+      <html:button id="focus-apply" type="button" data-focus-i18n="apply">应用</html:button>
+    </html:div>
+  </html:main>
+</vbox>

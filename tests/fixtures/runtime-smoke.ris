@@ -1,0 +1,31 @@
+TY  - JOUR
+TI  - Focus Columns smoke test: cached journal
+AU  - Test, Alpha
+PY  - 2026
+JO  - Mechanical Systems and Signal Processing
+VL  - 100
+SP  - 1
+KW  - #重点
+KW  - #a/b
+KW  - / ing
+ER  -
+
+TY  - JOUR
+TI  - Focus Columns smoke test: second cached journal
+AU  - Test, Beta
+PY  - 2026
+JO  - Engineering Structures
+VL  - 200
+SP  - 2
+KW  - #方法
+KW  - / no
+ER  -
+
+TY  - JOUR
+TI  - Focus Columns smoke test: missing cache
+AU  - Test, Gamma
+PY  - 2026
+JO  - Focus Columns Unknown Journal
+KW  - #待查
+KW  - / yes
+ER  -

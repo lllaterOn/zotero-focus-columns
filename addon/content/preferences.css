@@ -1,0 +1,215 @@
+.focus-preferences {
+  box-sizing: border-box;
+  color: inherit;
+  display: grid;
+  gap: 18px;
+  max-width: 880px;
+  padding: 8px 12px 20px;
+  width: 100%;
+}
+
+.focus-preferences-section {
+  border-bottom: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  padding-bottom: 16px;
+}
+
+.focus-preferences h2 {
+  font-size: 1.08rem;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.focus-feature-groups {
+  display: grid;
+  gap: 14px 32px;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+}
+
+.focus-feature-group {
+  min-width: 0;
+}
+
+.focus-feature-group h3 {
+  color: color-mix(in srgb, currentColor 72%, transparent);
+  font-size: 0.94rem;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.focus-toggle-list {
+  display: grid;
+  gap: 6px;
+}
+
+.focus-toggle-list label,
+.focus-checkbox-row {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  min-height: 28px;
+}
+
+.focus-form-grid {
+  align-items: center;
+  display: grid;
+  gap: 10px 14px;
+  grid-template-columns: minmax(120px, max-content) minmax(240px, 1fr);
+}
+
+.focus-form-grid input[type="text"],
+.focus-form-grid input[type="password"],
+.focus-form-grid input[type="url"],
+.focus-form-grid textarea {
+  box-sizing: border-box;
+  font: inherit;
+  width: 100%;
+}
+
+.focus-form-grid textarea {
+  min-height: 180px;
+  resize: vertical;
+}
+
+.focus-checkbox-row {
+  grid-column: 2;
+}
+
+.focus-sync-controls {
+  display: grid;
+  gap: 8px;
+}
+
+.focus-sync-master {
+  grid-column: auto;
+  font-weight: 600;
+}
+
+#focus-sync-channels {
+  margin-left: 26px;
+}
+
+.focus-sync-notice {
+  color: color-mix(in srgb, currentColor 72%, transparent);
+  line-height: 1.45;
+  margin: 10px 0;
+}
+
+.focus-sync-status {
+  line-height: 1.5;
+  min-height: 24px;
+  overflow-wrap: anywhere;
+}
+
+.focus-sync-summary,
+.focus-sync-meta {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 16px;
+  row-gap: 2px;
+}
+
+.focus-sync-summary {
+  font-weight: 500;
+}
+
+.focus-sync-summary > span + span::before,
+.focus-sync-meta > span + span::before {
+  color: color-mix(in srgb, currentColor 62%, transparent);
+  content: "·";
+  margin-inline-end: 16px;
+}
+
+.focus-sync-meta {
+  color: color-mix(in srgb, currentColor 68%, transparent);
+  margin-top: 2px;
+}
+
+.focus-sync-detail {
+  margin-top: 4px;
+}
+
+.focus-sync-status[data-state="ready"] .focus-sync-summary {
+  color: #18794e;
+}
+
+.focus-sync-status[data-state="error"] .focus-sync-summary,
+.focus-sync-status[data-state="error"] .focus-sync-detail {
+  color: #b42318;
+}
+
+.focus-sync-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.focus-sync-actions button {
+  font: inherit;
+  min-height: 30px;
+}
+
+.focus-advanced {
+  border-bottom: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  padding-bottom: 16px;
+}
+
+.focus-advanced summary {
+  cursor: pointer;
+  font-size: 1.04rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.focus-color-row {
+  display: flex;
+  gap: 8px;
+}
+
+.focus-color-row input[type="color"],
+.focus-form-grid > input[type="color"] {
+  height: 30px;
+  padding: 1px;
+  width: 42px;
+}
+
+.focus-footer {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: flex-end;
+  min-height: 34px;
+}
+
+#focus-preferences-status {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.focus-status-error {
+  color: #b42318;
+}
+
+.focus-status-ok {
+  color: #18794e;
+}
+
+#focus-apply {
+  font: inherit;
+  font-weight: 600;
+  min-height: 30px;
+  min-width: 72px;
+}
+
+@media (max-width: 680px) {
+  .focus-feature-groups,
+  .focus-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .focus-checkbox-row {
+    grid-column: 1;
+  }
+}
