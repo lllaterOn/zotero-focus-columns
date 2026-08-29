@@ -1,7 +1,19 @@
 {
   "addons": {
     "focus-columns@lllateron.github.io": {
-      "updates": []
+      "updates": [
+        {
+          "version": "1.0.1",
+          "update_link": "https://github.com/lllaterOn/zotero-focus-columns/releases/download/v1.0.1/zotero-focus-columns-1.0.1.xpi",
+          "update_hash": "sha256:7f8efe9f177b1df724811f114dd5a6663764d6efa511e98e983e4579042a955b",
+          "applications": {
+            "zotero": {
+              "strict_min_version": "10.0",
+              "strict_max_version": "10.0.*"
+            }
+          }
+        }
+      ]
     }
   }
 }
