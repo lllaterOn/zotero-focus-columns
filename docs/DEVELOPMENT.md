@@ -52,14 +52,17 @@ Releases use semantic versioning and tags named `v<major>.<minor>.<patch>`. Keep
 
 Update `CHANGELOG.md` and the current Chinese manual acceptance checklist in the same change.
 
-## Private Release Workflow
+## Public Release Workflow
 
 1. Merge a verified release change to `main`.
 2. Create and push the matching version tag.
 3. The release workflow runs `npm ci` and `npm run verify` in GitHub Actions.
-4. Actions creates a private draft release containing the XPI and `SHA256SUMS`.
+4. Actions creates a Draft Release containing the XPI and `SHA256SUMS`.
 5. Download that exact draft asset and perform real Zotero acceptance on both computers.
-6. If acceptance passes, publish the existing draft without rebuilding its assets.
-7. If acceptance fails, leave the draft unpublished, fix the defect under a new version, and generate a new candidate.
+6. If acceptance passes, publish the existing draft without rebuilding or replacing its assets.
+7. The publication workflow reads that Release's checksum and adds the formal version to `updates.json`.
+8. If acceptance fails, leave the draft unpublished, fix the defect under a new version, and generate a new candidate.
 
-The repository is private, so Zotero cannot anonymously fetch release assets. Do not restore an automatic update URL or embed a GitHub token in the plugin.
+`updates.json` remains public and credential-free. It must contain only formally published versions and must use the immutable versioned Release download URL and SHA-256. Draft assets are never advertised. The installed plugin checks this file through the `update_url` in `addon/manifest.json`.
+
+The build job has read-only repository permission. Only the small draft-upload job and the release-publication job receive `contents: write`; dependency installation and project build scripts never run with a write-capable token.

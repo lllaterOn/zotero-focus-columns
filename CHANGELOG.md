@@ -2,13 +2,21 @@
 
 All notable changes are recorded here. Releases follow semantic versioning.
 
+## 1.0.1
+
+- Added the `applications.zotero.update_url` required for Zotero 10 to accept the XPI.
+- Added a public, credential-free update manifest that advertises only formally published releases.
+- Added automatic update-manifest publication from the exact accepted Release checksum.
+- Hardened GitHub Actions by separating read-only builds from the minimal release-write job and pinning third-party Actions.
+- Published the project under the MIT License and documented the public release, update, security, and acceptance workflows.
+
 ## 1.0.0
 
 - Established Focus Columns as an independent Zotero 10 plugin project.
 - Assigned the stable add-on ID `focus-columns@lllateron.github.io` and the project preference namespace `extensions.zotero.lllateron.focusColumns.*`.
 - Removed device-generated metadata from synchronization notes while preserving revision, content-hash, conflict, backup, and channel-isolation behavior.
 - Started a clean synchronization schema under the final plugin identity; pre-1.0 notes and preferences are not migrated.
-- Replaced inaccessible private-repository automatic updates with authenticated, manual GitHub Release downloads.
+- Initially used authenticated, manual GitHub Release downloads without a public update manifest.
 - Added deterministic XPI assembly, repository hygiene checks, version consistency checks, CI verification, and draft-release automation.
 - Removed one-time migration utilities, runtime profiles, obsolete update metadata, source maps, and stale acceptance documents from the maintained project tree.
 

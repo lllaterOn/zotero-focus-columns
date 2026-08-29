@@ -20,8 +20,15 @@
 - Shared container marker: `personal-zotero-addons-container: 1`
 - Child-note title: `Focus Columns`
 - Synchronization marker: `FOCUS_COLUMNS_SYNC_DATA`
+- Update manifest: `https://raw.githubusercontent.com/lllaterOn/zotero-focus-columns/main/updates.json`
 
 These values are compatibility contracts after 1.0.0 and must not be renamed casually.
+
+## Distribution Boundary
+
+Git tags identify the exact source commit for a version. GitHub Actions builds one Draft Release XPI from that tag. The accepted Draft asset is published without replacement. Only after formal publication is the version, public download URL, SHA-256, and Zotero compatibility range added to `updates.json`; drafts are never advertised to installed clients.
+
+The update manifest and Release URLs are public and contain no credential. `package.json` remains marked `private` only to prevent accidental publication to the npm registry.
 
 ## Item Data Contracts
 

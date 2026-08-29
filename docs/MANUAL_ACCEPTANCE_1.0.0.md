@@ -1,5 +1,7 @@
 # Focus Columns 1.0.0 人工验收清单
 
+> 历史结论：该候选版本因缺少 Zotero 10 必需的 `applications.zotero.update_url` 而无法安装，未通过验收。此文档仅保留原始验收范围；后续修复见 `MANUAL_ACCEPTANCE_1.0.1.md`。
+
 本清单用于验证 GitHub Draft Release 中的确切 XPI。自动测试不能替代真实 Zotero 10 界面和跨电脑同步验收。
 
 开始前请备份两台电脑的 Zotero 数据目录，并记录候选 XPI 的 SHA-256。
