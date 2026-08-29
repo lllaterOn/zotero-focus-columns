@@ -18,6 +18,7 @@
 - Add-on ID: `focus-columns@lllateron.github.io`.
 - Preference branch: `extensions.zotero.lllateron.focusColumns.*`.
 - Release asset: `zotero-focus-columns-<version>.xpi`.
+- Update manifest: `https://raw.githubusercontent.com/lllaterOn/zotero-focus-columns/main/updates.json`.
 - Synchronization must not contain device identifiers or local connection state.
 - EasyScholar keys, synchronization switches, runtime connection keys, and local backups never enter synchronized settings.
 - Do not silently merge conflicts, recreate trashed synchronization objects, or delete shared objects when synchronization is disabled or the plugin is uninstalled.
@@ -27,8 +28,9 @@
 - Run `npm run verify` after every code change.
 - Keep `package.json`, `package-lock.json`, and `addon/manifest.json` on the same version.
 - Update `CHANGELOG.md` and the current manual acceptance checklist for each release.
-- Private GitHub Releases are installed manually; do not add authenticated URLs or tokens to an update manifest.
+- Release and update URLs must remain public HTTPS URLs and must never contain a credential.
 - A release tag creates one draft release artifact. Publish that same artifact only after real Zotero acceptance; do not rebuild it after acceptance.
+- `updates.json` lists only formally published releases. Never advertise a draft or replace an existing version's XPI.
 
 ## Git Workflow
 

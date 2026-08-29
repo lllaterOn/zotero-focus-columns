@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Focus Columns",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Focused publication-rank, hash-tag, status, and remark columns for Zotero 10.",
   "homepage_url": "https://github.com/lllaterOn/zotero-focus-columns",
   "author": "lllaterOn",
@@ -12,6 +12,7 @@
   "applications": {
     "zotero": {
       "id": "focus-columns@lllateron.github.io",
+      "update_url": "https://raw.githubusercontent.com/lllaterOn/zotero-focus-columns/main/updates.json",
       "strict_min_version": "10.0",
       "strict_max_version": "10.0.*"
     }

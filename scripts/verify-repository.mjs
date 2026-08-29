@@ -16,16 +16,18 @@ const excludedDirectories = new Set([
 for (const required of [
   "AGENTS.md",
   "CHANGELOG.md",
+  "LICENSE",
   "README.md",
+  "updates.json",
   "docs/ARCHITECTURE.md",
   "docs/DEVELOPMENT.md",
-  "docs/MANUAL_ACCEPTANCE_1.0.0.md"
+  "docs/MANUAL_ACCEPTANCE_1.0.0.md",
+  "docs/MANUAL_ACCEPTANCE_1.0.1.md"
 ]) {
   await access(join(root, required));
 }
 
 for (const forbiddenPath of [
-  ["updates" + ".json"],
   ["scripts", "migrate-style-" + "cache.mjs"]
 ]) {
   try {

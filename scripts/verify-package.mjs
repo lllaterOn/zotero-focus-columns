@@ -7,6 +7,7 @@ const staging = join(root, "build", "addon");
 const packageJSON = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
 const packageLock = JSON.parse(await readFile(join(root, "package-lock.json"), "utf8"));
 const sourceManifest = JSON.parse(await readFile(join(root, "addon", "manifest.json"), "utf8"));
+const updateManifest = JSON.parse(await readFile(join(root, "updates.json"), "utf8"));
 const manifest = JSON.parse(await readFile(join(staging, "manifest.json"), "utf8"));
 const zotero = manifest.applications?.zotero;
 
@@ -22,14 +23,17 @@ if (versions.some(version => version !== packageJSON.version)) {
 }
 if (packageJSON.name !== "zotero-focus-columns"
   || packageJSON.private !== true
-  || packageJSON.license !== "UNLICENSED") {
+  || packageJSON.license !== "MIT") {
   throw new Error("Unexpected package identity");
 }
 if (zotero?.id !== "focus-columns@lllateron.github.io") {
   throw new Error("Unexpected plugin ID");
 }
-if ("update_url" in zotero) {
-  throw new Error("Private releases must not advertise an inaccessible automatic update URL");
+if (zotero.update_url !== "https://raw.githubusercontent.com/lllaterOn/zotero-focus-columns/main/updates.json") {
+  throw new Error("Unexpected plugin update URL");
+}
+if (!Array.isArray(updateManifest.addons?.[zotero.id]?.updates)) {
+  throw new Error("Missing public update manifest for the plugin ID");
 }
 if (manifest.homepage_url !== "https://github.com/lllaterOn/zotero-focus-columns") {
   throw new Error("Unexpected plugin homepage");

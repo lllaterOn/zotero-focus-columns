@@ -1,9 +1,9 @@
 {
   "name": "zotero-focus-columns",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "engines": {
     "node": ">=22"
   },
@@ -13,9 +13,10 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "verify:repository": "node scripts/verify-repository.mjs",
+    "verify:update-manifest": "node scripts/verify-update-manifest.mjs",
     "build": "node scripts/build.mjs",
     "verify:package": "node scripts/verify-package.mjs",
-    "verify": "npm run typecheck && npm run test && npm run verify:repository && npm run build && npm run verify:package"
+    "verify": "npm run typecheck && npm run test && npm run verify:repository && npm run verify:update-manifest && npm run build && npm run verify:package"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.4",
