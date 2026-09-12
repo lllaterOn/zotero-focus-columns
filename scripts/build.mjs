@@ -11,7 +11,6 @@ const staging = join(root, "build", "addon");
 const dist = join(root, "dist");
 
 await rm(join(root, "build"), { recursive: true, force: true });
-await rm(dist, { recursive: true, force: true });
 await mkdir(staging, { recursive: true });
 await mkdir(dist, { recursive: true });
 await cp(join(root, "addon"), staging, { recursive: true });

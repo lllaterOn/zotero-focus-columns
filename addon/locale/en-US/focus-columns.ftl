@@ -5,4 +5,5 @@ focus-columns-update-publication =
 focus-columns-delete-publication =
     .label = Delete publication tags for selected items
 focus-columns-undo-change-status = Change Status
+focus-columns-undo-change-hash-tags = Change # Tags
 focus-columns-undo-edit-remark = Edit Remark

@@ -2,6 +2,7 @@ import { PLUGIN_ID } from "../constants";
 import {
   currentStatus,
   hashTagBadges,
+  hashTagsAfterSelection,
   statusCandidates,
   statusTagsAfterSelection
 } from "../domain/tags";
@@ -11,7 +12,7 @@ import { tr } from "../i18n";
 import type { SettingsSnapshot } from "../settings";
 import type { NativeTag, TagColor } from "../types";
 import { PublicationService, publicationTitle } from "../services/publicationService";
-import { openRemarkPopover, openStatusPopover } from "./popovers";
+import { openHashTagPopover, openRemarkPopover, openStatusPopover } from "./popovers";
 import {
   renderBadges,
   renderStatus,
@@ -159,6 +160,13 @@ export class ColumnController {
           ) : [];
           const cell = renderBadges(doc, column, badges);
           cell.classList.add("focus-columns-cell-centered");
+          if (regularItem(item)) {
+            cell.classList.add("focus-columns-interactive");
+            cell.addEventListener("click", event => {
+              event.stopPropagation();
+              this.showHashTags(cell, item.id);
+            });
+          }
           return cell;
         }
       });
@@ -224,6 +232,49 @@ export class ColumnController {
     const id = this.registered.get(feature);
     if (id) Zotero.ItemTreeManager.unregisterColumn(id);
     this.registered.delete(feature);
+  }
+
+  private showHashTags(anchor: HTMLElement, itemID: number): void {
+    const item = Zotero.Items.get(itemID);
+    if (!regularItem(item)) return;
+    // Capture the target items before the asynchronous candidate query.
+    const items = selectedItemsFor(item, anchor.ownerDocument);
+    const states = items.map(target => target.getTags()
+      .filter(({ tag }: NativeTag) => tag.startsWith("#"))
+      .map(({ tag }: NativeTag) => tag) as string[]);
+    const first = states[0] || [];
+    const selected = first.length <= 1 && states.every(tags =>
+      tags.length === first.length && tags[0] === first[0])
+      ? first[0] ?? null : "mixed";
+    openHashTagPopover(anchor, async () => {
+      const tags = await Zotero.Tags.getAll(item.libraryID) as NativeTag[];
+      const unique = [...new Set(tags.map(({ tag }) => tag))].map(tag => ({ tag }));
+      return hashTagBadges(unique, colorMap(item.libraryID), this.getSettings().hashTagsDefaultColor)
+        .map(badge => ({ tag: badge.key, color: badge.background }));
+    }, selected, value => this.applyHashTags(items, anchor.ownerDocument, value));
+  }
+
+  private async applyHashTags(items: any[], doc: Document, selected: string | null): Promise<void> {
+    try {
+      if (items.some(item => !item.isEditable())) throw new Error("Items are not editable");
+      await Zotero.DB.executeTransaction(async () => {
+        const changes = items.map(item => {
+          const before = item.getTags() as NativeTag[];
+          const after = hashTagsAfterSelection(before, selected);
+          return { item, before, after };
+        }).filter(({ before, after }) => !sameTags(before, after));
+        if (!changes.length) return;
+        Zotero.UndoHistory.stageAction("focus-columns-undo-change-hash-tags", { count: changes.length });
+        for (const { item, after } of changes) {
+          item.setTags(after);
+          await item.save({ skipSelect: true });
+        }
+      });
+      this.onDataChanged();
+    }
+    catch {
+      Services.prompt.alert(doc.defaultView, tr("pluginName"), tr("saveHashTagsFailed"));
+    }
   }
 
   private showStatus(anchor: HTMLElement, itemID: number): void {

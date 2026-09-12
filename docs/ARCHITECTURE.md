@@ -42,6 +42,14 @@ A `user-cleared` entry intentionally contains no visible ranks. Automatic cache-
 
 Hash tags and status values are native Zotero tags. The hash-tag column displays tags beginning with `#` and hides only the first prefix character. Status uses colored tags beginning with `/`; `/yes`, `/ing`, and `/no` form one mutually exclusive group.
 
+The hash-tag popup offers searchable single selection from all existing native tags beginning with `#` in the current library, including tags without colors. It does not create tags. Choosing a candidate replaces every hash tag on each target item with that exact native tag name; clearing removes all hash tags. Both actions preserve all non-hash tags, save, close the popup, and support undo. Opening the popup or upgrading the plugin never migrates existing multiple hash tags. Multiple or mixed values must not appear as a single shared selection.
+
+Hash-tag editing follows the status selection scope: clicking a selected regular item targets selected regular items in the same library; clicking an unselected regular item targets only that item. Noneditable libraries must not accept edits.
+
+### Popup Placement
+
+Item-tree popovers use native centered positioning anchored to the clicked cell. The first visible frame must already be centered, with native screen-edge adjustment. Status and remark popovers share this positioning behavior and require regression checks at different column widths, screen edges, and display scales.
+
 ### Remark
 
 The remark is one `remark:` line in the Zotero `Extra` field. Reads and writes must preserve every unrelated line.

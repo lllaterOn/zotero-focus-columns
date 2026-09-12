@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { currentStatus, hashTagBadges, statusCandidates, statusTagsAfterSelection } from "../src/domain/tags";
+import { currentStatus, hashTagBadges, hashTagsAfterSelection, statusCandidates, statusTagsAfterSelection } from "../src/domain/tags";
 
 const colors = new Map([
   ["/ no", { color: "#ff0000", position: 1 }],
@@ -10,6 +10,22 @@ const colors = new Map([
 ]);
 
 describe("native tag views", () => {
+  it("replaces all hash tags without changing other tags or the input", () => {
+    const original = [{ tag: "#old", type: 1 }, { tag: "##other" },
+      { tag: "/ ing", type: 0 }, { tag: "normal", type: 1 }];
+    const before = structuredClone(original);
+    expect(hashTagsAfterSelection(original, "#重点")).toEqual([
+      { tag: "/ ing", type: 0 }, { tag: "normal", type: 1 }, { tag: "#重点", type: 0 }
+    ]);
+    expect(original).toEqual(before);
+  });
+
+  it("clears only hash tags and refuses an invalid selection", () => {
+    const tags = [{ tag: "#old" }, { tag: "normal", type: 1 }];
+    expect(hashTagsAfterSelection(tags, null)).toEqual([{ tag: "normal", type: 1 }]);
+    expect(() => hashTagsAfterSelection(tags, "normal")).toThrow();
+    expect(hashTagsAfterSelection([], "#new")).toEqual([{ tag: "#new", type: 0 }]);
+  });
   it("shows every hash tag and strips only the first hash", () => {
     const badges = hashTagBadges(
       [{ tag: "#重点" }, { tag: "#a/b" }, { tag: "normal" }],
