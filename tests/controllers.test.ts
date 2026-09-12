@@ -3,6 +3,11 @@ import { ColumnController } from "../src/features/columns";
 import { InfoRowController } from "../src/features/infoRows";
 import { publicationSortKey } from "../src/domain/publication";
 import type { SettingsSnapshot } from "../src/settings";
+import { openHashTagPopover } from "../src/features/popovers";
+
+vi.mock("../src/features/popovers", () => ({
+  openHashTagPopover: vi.fn(), openStatusPopover: vi.fn(), openRemarkPopover: vi.fn()
+}));
 
 function settings(overrides: Partial<SettingsSnapshot> = {}): SettingsSnapshot {
   return {
@@ -28,6 +33,7 @@ function settings(overrides: Partial<SettingsSnapshot> = {}): SettingsSnapshot {
 
 describe("feature controllers", () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     (globalThis as any).Zotero = {
       ItemTreeManager: {
         registerColumn: vi.fn((option: any) => `registered-${option.dataKey}`),
@@ -46,6 +52,103 @@ describe("feature controllers", () => {
         ]))
       }
     };
+  });
+
+  function hashTagUI() {
+    const makeItem = (id: number, tags = [{ tag: "#old", type: 0 }], libraryID = 1, regular = true) => ({
+      id, libraryID, isRegularItem: () => regular, isEditable: () => true,
+      getTags: vi.fn(() => tags), setTags: vi.fn(), save: vi.fn().mockResolvedValue(id)
+    });
+    const clicked = makeItem(1);
+    const peer = makeItem(2, [{ tag: "#other", type: 1 }, { tag: "normal", type: 1 }]);
+    const foreign = makeItem(3, [], 2);
+    const note = makeItem(4, [], 1, false);
+    let selected = [clicked, peer, foreign, note];
+    const handlers: Record<string, (event: any) => void> = {};
+    const doc: any = {
+      defaultView: { ZoteroPane: {
+        getSelectedItems: () => selected,
+        itemsView: { getRow: () => ({ ref: clicked }) }
+      } },
+      createElement: () => ({
+        classList: { add: vi.fn() }, style: {}, appendChild: vi.fn(),
+        addEventListener: (name: string, handler: (event: any) => void) => { handlers[name] = handler; },
+        ownerDocument: doc
+      })
+    };
+    Zotero.Items = { get: vi.fn(() => clicked) };
+    Zotero.Tags.getAll = vi.fn().mockResolvedValue([
+      { tag: "#重点", type: 0 }, { tag: "#重点", type: 1 }, { tag: "#plain" }, { tag: "ordinary" }
+    ]);
+    Zotero.DB = { executeTransaction: vi.fn(async (callback: () => Promise<void>) => callback()) };
+    Zotero.UndoHistory = { stageAction: vi.fn() };
+    (globalThis as any).Services = { prompt: { alert: vi.fn() } };
+    const changed = vi.fn();
+    const controller = new ColumnController(() => settings({ hashTagsColumn: true }), {} as any, changed);
+    controller.sync();
+    const option = Zotero.ItemTreeManager.registerColumn.mock.calls
+      .map((call: any[]) => call[0]).find((option: any) => option.dataKey === "hash-tags");
+    option.renderCell(0, "", { className: "hash" }, false, doc);
+    const click = () => handlers.click({ stopPropagation: vi.fn() });
+    const popup = () => vi.mocked(openHashTagPopover).mock.calls.at(-1)!;
+    return { clicked, peer, foreign, note, changed, click, popup, setSelected: (items: typeof selected) => { selected = items; } };
+  }
+
+  it("loads deduplicated library hash tags and captures batch targets before loading", async () => {
+    const ui = hashTagUI();
+    ui.click();
+    const [, load, selected, save] = ui.popup();
+    expect(selected).toBe("mixed");
+    expect(await load()).toEqual([
+      { tag: "#重点", color: "#2255aa" }, { tag: "#plain", color: "#777777" }
+    ]);
+    expect(Zotero.Tags.getAll).toHaveBeenCalledWith(1);
+    expect(ui.clicked.setTags).not.toHaveBeenCalled();
+    ui.setSelected([ui.foreign]);
+    await save("#重点");
+    expect(ui.clicked.setTags).toHaveBeenCalledWith([{ tag: "#重点", type: 0 }]);
+    expect(ui.peer.setTags).toHaveBeenCalledWith([{ tag: "normal", type: 1 }, { tag: "#重点", type: 0 }]);
+    expect(ui.foreign.save).not.toHaveBeenCalled();
+    expect(ui.note.save).not.toHaveBeenCalled();
+    expect(Zotero.UndoHistory.stageAction).toHaveBeenCalledExactlyOnceWith(
+      "focus-columns-undo-change-hash-tags", { count: 2 }
+    );
+    expect(ui.clicked.save).toHaveBeenCalledWith({ skipSelect: true });
+    expect(ui.changed).toHaveBeenCalledOnce();
+  });
+
+  it("clears only the clicked item when it is outside the selection", async () => {
+    const ui = hashTagUI();
+    ui.setSelected([ui.peer]);
+    ui.click();
+    expect(ui.popup()[2]).toBe("#old");
+    await ui.popup()[3](null);
+    expect(ui.clicked.setTags).toHaveBeenCalledWith([]);
+    expect(ui.peer.save).not.toHaveBeenCalled();
+    expect(Zotero.UndoHistory.stageAction).toHaveBeenCalledWith(
+      "focus-columns-undo-change-hash-tags", { count: 1 }
+    );
+  });
+
+  it("does not write unchanged tags or create an empty undo action", async () => {
+    const ui = hashTagUI();
+    ui.setSelected([ui.clicked]);
+    ui.click();
+    await ui.popup()[3]("#old");
+    expect(ui.clicked.save).not.toHaveBeenCalled();
+    expect(Zotero.UndoHistory.stageAction).not.toHaveBeenCalled();
+  });
+
+  it("rejects an uneditable batch before changing any item", async () => {
+    const ui = hashTagUI();
+    ui.peer.isEditable = () => false;
+    ui.click();
+    await ui.popup()[3](null);
+    expect(ui.clicked.setTags).not.toHaveBeenCalled();
+    expect(ui.peer.setTags).not.toHaveBeenCalled();
+    expect(Zotero.DB.executeTransaction).not.toHaveBeenCalled();
+    expect(Services.prompt.alert).toHaveBeenCalledOnce();
+    expect(ui.changed).not.toHaveBeenCalled();
   });
 
   it("registers column switches independently with Zotero-compatible widths", () => {

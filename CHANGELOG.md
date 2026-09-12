@@ -2,6 +2,14 @@
 
 All notable changes are recorded here. Releases follow semantic versioning.
 
+## 1.1.0 — Pending acceptance
+
+- Use native centered popup positioning so status menus appear centered on their first visible frame instead of moving after opening; remark popovers share the positioning behavior.
+- Add a searchable single-selection popup to the hash-tag column, listing all existing native `#` tags in the current library, including uncolored tags, and hiding only the first `#` in displayed names.
+- Replace all hash tags on the target items when choosing a tag, or remove them with the clear action, while preserving non-hash tags and supporting undo. Existing multiple hash tags remain unchanged until an explicit edit.
+- Apply hash-tag edits to selected regular items in the same library when clicking a selected item, or only to the clicked item otherwise. Mixed or multiple hash-tag values are not presented as one shared selection.
+- Add a two-computer acceptance checklist for the exact Draft XPI, covering popup placement, tag editing, undo, and existing-feature regressions. Formal publication remains pending real Zotero acceptance.
+
 ## 1.0.1
 
 - Added the `applications.zotero.update_url` required for Zotero 10 to accept the XPI.

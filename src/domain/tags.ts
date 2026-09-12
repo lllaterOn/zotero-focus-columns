@@ -48,6 +48,18 @@ export function statusCandidates(colors: Map<string, TagColor>): Array<{
     ));
 }
 
+export function hashTagsAfterSelection(
+  tags: NativeTag[],
+  selected: string | null
+): NativeTag[] {
+  if (selected !== null && !selected.startsWith("#")) {
+    throw new Error("Expected an existing hash tag");
+  }
+  const retained = tags.filter(({ tag }) => !tag.startsWith("#"));
+  if (selected !== null) retained.push({ tag: selected, type: 0 });
+  return retained;
+}
+
 export function currentStatus(
   tags: NativeTag[],
   colors: Map<string, TagColor>
