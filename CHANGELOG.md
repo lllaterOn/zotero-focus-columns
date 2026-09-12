@@ -2,7 +2,17 @@
 
 All notable changes are recorded here. Releases follow semantic versioning.
 
-## 1.1.1 — Pending acceptance
+## 1.1.2 — Pending acceptance
+
+- Constrain the native hash-tag panel's shadow content as well as its inner content, targeting a visible border-box width of 190–280 CSS pixels. Account for the host's 8-pixel shadow allowance, remove duplicate host padding, and cap inner content at 266 CSS pixels.
+- Retain the existing search, font size, row height, focus, selection, and editing behavior while correcting the width still reported in `1.1.1` acceptance.
+- Add an acceptance checklist for the exact `1.1.2` Draft XPI, with width checks across labels, search states, and display scales. Source and HTML layout checks do not establish native Zotero visual acceptance or fully confirm the cause of the reported width.
+
+Formal publication remains pending real Zotero acceptance. Earlier candidates remain unpublished with their assets preserved.
+
+## 1.1.1 — Unpublished candidate
+
+The user reported that functional behavior was working, but the popup remained too wide in the acceptance screenshot. Width acceptance failed; this candidate remains unpublished and its assets are preserved.
 
 - Make the hash-tag popup compact for short labels, with bounded expansion for long labels, while retaining search, font size, and row height.
 - Keep focus in the item list when opening the hash-tag popup; focus search only when the user chooses it, and restore list focus on dismissal without overriding an explicit click elsewhere.
@@ -11,7 +21,7 @@ All notable changes are recorded here. Releases follow semantic versioning.
 - Keep popup placement stable when background updates redraw virtualized item rows; dismiss appropriately when window movement or list scrolling makes that position stale.
 - Add real Zotero acceptance cases for repeated clicks, popup disappearance, focus changes, selection preservation, and shared remark-popup behavior. Automated verification does not establish that the reported GIF behavior is resolved.
 
-The `1.1.0` candidate remains unpublished and is retained without replacing its assets. Formal publication of `1.1.1` remains pending acceptance of its exact Draft XPI.
+The `1.1.0` candidate also remains unpublished and is retained without replacing its assets.
 
 ## 1.1.0 — Unpublished candidate
 

@@ -102,13 +102,28 @@
   width: auto;
 }
 
+.focus-columns-hash-tags-panel {
+  /* Gecko sizes the visible panel through its shadow content slot. */
+  --panel-width: max-content;
+  padding: 0;
+  width: max-content;
+  max-width: min(calc(280px + 2 * var(--panel-shadow-margin)), calc(100vw - 16px));
+}
+
+.focus-columns-hash-tags-panel::part(content) {
+  /* Include native padding and borders; the host also has shadow margins. */
+  min-width: min(190px, calc(100vw - 24px));
+  max-width: min(280px, round(up, 100% - 2 * var(--panel-shadow-margin), 1px));
+}
+
 .focus-columns-hash-tags-form {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 4px;
   width: max-content;
-  min-width: min(190px, calc(100vw - 40px));
-  max-width: min(280px, calc(100vw - 40px));
+  min-width: 0;
+  max-width: min(266px, calc(100vw - 38px));
 }
 
 .focus-columns-hash-tags-search {
