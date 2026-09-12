@@ -12,6 +12,17 @@
               "strict_max_version": "10.0.*"
             }
           }
+        },
+        {
+          "version": "1.1.3",
+          "update_link": "https://github.com/lllaterOn/zotero-focus-columns/releases/download/v1.1.3/zotero-focus-columns-1.1.3.xpi",
+          "update_hash": "sha256:3e33be73716b9fded096e84a30b2e9e89f325d322f7428d904949774524b70ad",
+          "applications": {
+            "zotero": {
+              "strict_min_version": "10.0",
+              "strict_max_version": "10.0.*"
+            }
+          }
         }
       ]
     }
