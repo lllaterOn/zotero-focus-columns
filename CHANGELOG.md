@@ -2,7 +2,18 @@
 
 All notable changes are recorded here. Releases follow semantic versioning.
 
-## 1.1.0 — Pending acceptance
+## 1.1.1 — Pending acceptance
+
+- Make the hash-tag popup compact for short labels, with bounded expansion for long labels, while retaining search, font size, and row height.
+- Keep focus in the item list when opening the hash-tag popup; focus search only when the user chooses it, and restore list focus on dismissal without overriding an explicit click elsewhere.
+- Preserve the selected item set across press and release events in the hash-tag and status columns so batch edits retain their intended scope.
+- Allow one click on another cell to dismiss the old popup and reach the newly clicked cell instead of consuming the first outside click.
+- Keep popup placement stable when background updates redraw virtualized item rows; dismiss appropriately when window movement or list scrolling makes that position stale.
+- Add real Zotero acceptance cases for repeated clicks, popup disappearance, focus changes, selection preservation, and shared remark-popup behavior. Automated verification does not establish that the reported GIF behavior is resolved.
+
+The `1.1.0` candidate remains unpublished and is retained without replacing its assets. Formal publication of `1.1.1` remains pending acceptance of its exact Draft XPI.
+
+## 1.1.0 — Unpublished candidate
 
 - Use native centered popup positioning so status menus appear centered on their first visible frame instead of moving after opening; remark popovers share the positioning behavior.
 - Add a searchable single-selection popup to the hash-tag column, listing all existing native `#` tags in the current library, including uncolored tags, and hiding only the first `#` in displayed names.

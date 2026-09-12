@@ -46,9 +46,15 @@ The hash-tag popup offers searchable single selection from all existing native t
 
 Hash-tag editing follows the status selection scope: clicking a selected regular item targets selected regular items in the same library; clicking an unselected regular item targets only that item. Noneditable libraries must not accept edits.
 
+Press and release handling in the hash-tag and status columns must preserve the selected item set before an edit is chosen. Batch scope must not collapse to the clicked row as a side effect of opening the popup.
+
+An outside click on a different cell must dismiss the current popup and reach that cell in one interaction. Clicking the original anchor dismisses its popup without immediately reopening it.
+
 ### Popup Placement
 
-Item-tree popovers use native centered positioning anchored to the clicked cell. The first visible frame must already be centered, with native screen-edge adjustment. Status and remark popovers share this positioning behavior and require regression checks at different column widths, screen edges, and display scales.
+Item-tree popovers must appear centered relative to the clicked cell on their first visible frame, with screen-edge adjustment. Background redraws of virtualized item rows must not invalidate an open popup's position or unexpectedly hide it. Window movement and item-list scrolling must dismiss a popup when its original position is no longer appropriate. Status and remark popovers share the placement contract and require regression checks at different column widths, screen edges, and display scales.
+
+The hash-tag popup targets roughly 180–200 CSS pixels for short labels and may expand for longer labels up to 280 CSS pixels. Font size, row height, and search remain usable. Opening it must not automatically focus search; clicking the search field transfers focus. Dismissal should restore list focus when appropriate, while an explicit click on another control must retain the user's chosen focus. These are user-interface acceptance requirements; automated tests alone cannot verify the reported flicker, disappearance, or gray-to-blue selection behavior in real Zotero.
 
 ### Remark
 

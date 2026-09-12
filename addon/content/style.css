@@ -14,6 +14,15 @@
   cursor: pointer;
 }
 
+/* Match Zotero's clickable-cell specificity while retaining our cell spacing. */
+.virtualized-table .row .cell.focus-columns-interactive {
+  padding: 2px 5px;
+}
+
+.virtualized-table .row .cell.focus-columns-interactive:not(.focus-columns-cell-centered) {
+  justify-content: flex-start;
+}
+
 .focus-columns-cell-centered {
   justify-content: center;
 }
@@ -97,7 +106,9 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  width: min(280px, calc(100vw - 40px));
+  width: max-content;
+  min-width: min(190px, calc(100vw - 40px));
+  max-width: min(280px, calc(100vw - 40px));
 }
 
 .focus-columns-hash-tags-search {

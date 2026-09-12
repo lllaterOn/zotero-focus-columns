@@ -8,8 +8,66 @@ export interface StatusChoice {
 }
 
 function openCenteredPanel(panel: any, anchor: HTMLElement): void {
-  // Let Gecko measure, center and constrain the popup before its first paint.
-  panel.openPopup(anchor, "bottomcenter topcenter", 0, 2, false, false);
+  const doc = anchor.ownerDocument;
+  const window = doc.defaultView as any;
+  const tree = anchor.closest<HTMLElement>(".virtualized-table");
+  const rect = anchor.getBoundingClientRect();
+  const screen = window.windowUtils.toScreenRectInCSSUnits(rect.x, rect.y, rect.width, rect.height);
+  // A virtual row can replace its cells on focus or refresh. A rectangle survives
+  // that replacement while Gecko still handles centering, scaling and screen edges.
+  panel.setAttribute("norestorefocus", "true");
+  let outsideDismissal = false;
+  let restoreFocus = false;
+  const outsidePointer = (event: Event) => {
+    if (!panel.contains(event.target)) outsideDismissal = true;
+  };
+  const closeOnLayoutChange = (event: Event) => {
+    if (event.type === "scroll" && event.target !== window && panel.contains(event.target)) return;
+    if (event.type === "blur") outsideDismissal = true;
+    panel.hidePopup();
+  };
+  const keyboard = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      panel.hidePopup();
+    }
+    else if (tree?.contains(event.target as Node)) {
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        event.stopPropagation();
+        const options = [...panel.querySelectorAll("button:not(:disabled)")] as HTMLButtonElement[];
+        (event.key === "ArrowDown" ? options[0] : options.at(-1))?.focus();
+      }
+      else if (!event.ctrlKey && !event.altKey && !event.metaKey && event.key !== "Shift") {
+        panel.hidePopup();
+      }
+    }
+  };
+  panel.addEventListener("popuphiding", () => {
+    restoreFocus = !outsideDismissal && (panel.contains(doc.activeElement)
+      || doc.activeElement === doc.body || doc.activeElement === doc.documentElement);
+  }, { once: true });
+  panel.addEventListener("popuphidden", () => {
+    doc.removeEventListener("pointerdown", outsidePointer, true);
+    doc.removeEventListener("keydown", keyboard, true);
+    window.removeEventListener("scroll", closeOnLayoutChange, true);
+    window.removeEventListener("resize", closeOnLayoutChange);
+    window.removeEventListener("blur", closeOnLayoutChange);
+    window.windowRoot.removeEventListener("MozUpdateWindowPos", closeOnLayoutChange);
+    if (restoreFocus && tree?.isConnected && (panel.contains(doc.activeElement)
+      || doc.activeElement === doc.body || doc.activeElement === doc.documentElement)) {
+      tree.focus({ preventScroll: true });
+    }
+  }, { once: true });
+  doc.addEventListener("pointerdown", outsidePointer, true);
+  doc.addEventListener("keydown", keyboard, true);
+  window.addEventListener("scroll", closeOnLayoutChange, true);
+  window.addEventListener("resize", closeOnLayoutChange);
+  window.addEventListener("blur", closeOnLayoutChange);
+  window.windowRoot.addEventListener("MozUpdateWindowPos", closeOnLayoutChange);
+  panel.openPopupAtScreenRect("bottomcenter topcenter", Math.round(screen.x),
+    Math.round(screen.y + 2), Math.round(screen.width), Math.round(screen.height), false, false);
 }
 
 export interface HashTagChoice {
@@ -29,6 +87,7 @@ export function openHashTagPopover(
   form.className = "focus-columns-hash-tags-form";
   const search = doc.createElement("input");
   search.type = "search";
+  search.size = 1;
   search.className = "focus-columns-hash-tags-search";
   search.placeholder = tr("searchHashTags");
   search.setAttribute("aria-label", tr("searchHashTags"));
@@ -110,7 +169,6 @@ export function openHashTagPopover(
       target?.focus();
     }
   });
-  panel.addEventListener("popupshown", () => search.focus(), { once: true });
   openCenteredPanel(panel, anchor);
   void loadChoices().then(result => {
     if (closed) return;
