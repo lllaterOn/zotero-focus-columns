@@ -2,12 +2,13 @@
 
 All notable changes are recorded here. Releases follow semantic versioning.
 
-## 1.1.3 — Pending acceptance
+## 1.1.3 — 2026-09-12
 
 - Pass the startup version to `WindowUI` and include its encoded value in the stylesheet URL, preventing an in-session upgrade from reusing the previous version's parsed CSS. Popup width limits, font size, and row height are unchanged from `1.1.2`.
 - Reset the search field's native margins to prevent 8 CSS pixels of horizontal overflow inside a full-width field. In the isolated native check, the form's scroll width decreased from 184 to its 176-pixel client width.
 - Reproduce stale CSS in an isolated native Zotero `10.0.2` test: replacing the file, invalidating the startup cache, and re-adding the same stylesheet URL retained a 294-pixel visible popup; changing only the URL to include `?v=1.1.3` loaded the new rule and produced 190 CSS pixels. This controlled test did not inspect the user's profile.
-- Add acceptance of the exact Draft XPI while Zotero remains running, followed by restart and width/function regression checks. User acceptance and formal publication remain pending.
+- Add an acceptance checklist for the exact Draft XPI while Zotero remains running, followed by restart and width/function regression checks.
+- Publish the same Draft XPI after the user's explicit acceptance and publication approval. The public update manifest now advertises `1.1.3`; earlier unpublished candidates remain preserved. The user provided overall acceptance, not individual results for every checklist item or both computers.
 
 ## 1.1.2 — Unpublished candidate
 
