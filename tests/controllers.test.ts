@@ -3,7 +3,7 @@ import { ColumnController } from "../src/features/columns";
 import { InfoRowController } from "../src/features/infoRows";
 import { publicationSortKey } from "../src/domain/publication";
 import type { SettingsSnapshot } from "../src/settings";
-import { openHashTagPopover } from "../src/features/popovers";
+import { openHashTagPopover, openStatusPopover } from "../src/features/popovers";
 
 vi.mock("../src/features/popovers", () => ({
   openHashTagPopover: vi.fn(), openStatusPopover: vi.fn(), openRemarkPopover: vi.fn()
@@ -54,7 +54,7 @@ describe("feature controllers", () => {
     };
   });
 
-  function hashTagUI() {
+  function hashTagUI(dataKey = "hash-tags") {
     const makeItem = (id: number, tags = [{ tag: "#old", type: 0 }], libraryID = 1, regular = true) => ({
       id, libraryID, isRegularItem: () => regular, isEditable: () => true,
       getTags: vi.fn(() => tags), setTags: vi.fn(), save: vi.fn().mockResolvedValue(id)
@@ -65,13 +65,15 @@ describe("feature controllers", () => {
     const note = makeItem(4, [], 1, false);
     let selected = [clicked, peer, foreign, note];
     const handlers: Record<string, (event: any) => void> = {};
+    const classes = new Set<string>();
     const doc: any = {
       defaultView: { ZoteroPane: {
         getSelectedItems: () => selected,
         itemsView: { getRow: () => ({ ref: clicked }) }
       } },
       createElement: () => ({
-        classList: { add: vi.fn() }, style: {}, appendChild: vi.fn(),
+        classList: { add: (...names: string[]) => names.forEach(name => classes.add(name)) },
+        style: {}, appendChild: vi.fn(), append: vi.fn(),
         addEventListener: (name: string, handler: (event: any) => void) => { handlers[name] = handler; },
         ownerDocument: doc
       })
@@ -87,11 +89,16 @@ describe("feature controllers", () => {
     const controller = new ColumnController(() => settings({ hashTagsColumn: true }), {} as any, changed);
     controller.sync();
     const option = Zotero.ItemTreeManager.registerColumn.mock.calls
-      .map((call: any[]) => call[0]).find((option: any) => option.dataKey === "hash-tags");
+      .map((call: any[]) => call[0]).find((option: any) => option.dataKey === dataKey);
     option.renderCell(0, "", { className: "hash" }, false, doc);
-    const click = () => handlers.click({ stopPropagation: vi.fn() });
+    const click = () => {
+      // Zotero's capture guard stops down/up before the row can collapse selection.
+      if (!classes.has("clickable")) selected = [clicked];
+      handlers.click({ stopPropagation: vi.fn() });
+    };
     const popup = () => vi.mocked(openHashTagPopover).mock.calls.at(-1)!;
-    return { clicked, peer, foreign, note, changed, click, popup, setSelected: (items: typeof selected) => { selected = items; } };
+    return { clicked, peer, foreign, note, changed, click, popup, classes,
+      setSelected: (items: typeof selected) => { selected = items; } };
   }
 
   it("loads deduplicated library hash tags and captures batch targets before loading", async () => {
@@ -149,6 +156,18 @@ describe("feature controllers", () => {
     expect(Zotero.DB.executeTransaction).not.toHaveBeenCalled();
     expect(Services.prompt.alert).toHaveBeenCalledOnce();
     expect(ui.changed).not.toHaveBeenCalled();
+  });
+
+  it("protects status batch selection during the complete mouse interaction", async () => {
+    const ui = hashTagUI("reading-status");
+    ui.click();
+    const save = vi.mocked(openStatusPopover).mock.calls[0][2];
+    ui.setSelected([ui.foreign]);
+    await save("/ no");
+    expect(ui.clicked.setTags).toHaveBeenCalledWith([{ tag: "#old", type: 0 }, { tag: "/ no", type: 0 }]);
+    expect(ui.peer.save).toHaveBeenCalledOnce();
+    expect(ui.foreign.save).not.toHaveBeenCalled();
+    expect(Zotero.UndoHistory.stageAction).toHaveBeenCalledWith("focus-columns-undo-change-status", { count: 2 });
   });
 
   it("registers column switches independently with Zotero-compatible widths", () => {

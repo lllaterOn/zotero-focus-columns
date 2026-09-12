@@ -62,6 +62,8 @@ export function createPanel(doc: Document, className: string): any {
   panel.className = `focus-columns-panel ${className}`;
   panel.setAttribute("type", "arrow");
   panel.setAttribute("noautofocus", "true");
+  // Let one outside click both dismiss this popup and activate another cell.
+  panel.setAttribute("consumeoutsideclicks", "false");
   panel.addEventListener("popuphidden", () => panel.remove(), { once: true });
   doc.documentElement.appendChild(panel);
   return panel;

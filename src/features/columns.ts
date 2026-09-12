@@ -161,7 +161,8 @@ export class ColumnController {
           const cell = renderBadges(doc, column, badges);
           cell.classList.add("focus-columns-cell-centered");
           if (regularItem(item)) {
-            cell.classList.add("focus-columns-interactive");
+            // Zotero guards clickable cells before its row mousedown/mouseup handlers.
+            cell.classList.add("focus-columns-interactive", "clickable");
             cell.addEventListener("click", event => {
               event.stopPropagation();
               this.showHashTags(cell, item.id);
@@ -191,7 +192,7 @@ export class ColumnController {
           const cell = renderStatus(doc, column, status);
           cell.classList.add("focus-columns-cell-centered");
           if (regularItem(item)) {
-            cell.classList.add("focus-columns-interactive");
+            cell.classList.add("focus-columns-interactive", "clickable");
             cell.addEventListener("click", event => {
               event.stopPropagation();
               this.showStatus(cell, item.id);
@@ -215,7 +216,7 @@ export class ColumnController {
           const item = itemAtRow(index, doc);
           const cell = renderText(doc, column, data);
           if (regularItem(item)) {
-            cell.classList.add("focus-columns-interactive");
+            cell.classList.add("focus-columns-interactive", "clickable");
             cell.addEventListener("click", event => {
               event.stopPropagation();
               openRemarkPopover(cell, data, value => this.saveRemark(item, value));
@@ -287,12 +288,11 @@ export class ColumnController {
       color,
       selected: tag === current
     }));
-    openStatusPopover(anchor, choices, value => this.applyStatus(item, anchor.ownerDocument, value));
+    const items = selectedItemsFor(item, anchor.ownerDocument);
+    openStatusPopover(anchor, choices, value => this.applyStatus(items, colors, value));
   }
 
-  private async applyStatus(clickedItem: any, doc: Document, selected: string | null): Promise<void> {
-    const items = selectedItemsFor(clickedItem, doc);
-    const colors = colorMap(clickedItem.libraryID);
+  private async applyStatus(items: any[], colors: Map<string, TagColor>, selected: string | null): Promise<void> {
     await Zotero.DB.executeTransaction(async () => {
       Zotero.UndoHistory.stageAction("focus-columns-undo-change-status", { count: items.length });
       for (const item of items) {
