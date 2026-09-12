@@ -2,13 +2,22 @@
 
 All notable changes are recorded here. Releases follow semantic versioning.
 
-## 1.1.2 — Pending acceptance
+## 1.1.3 — Pending acceptance
+
+- Pass the startup version to `WindowUI` and include its encoded value in the stylesheet URL, preventing an in-session upgrade from reusing the previous version's parsed CSS. Popup width limits, font size, and row height are unchanged from `1.1.2`.
+- Reset the search field's native margins to prevent 8 CSS pixels of horizontal overflow inside a full-width field. In the isolated native check, the form's scroll width decreased from 184 to its 176-pixel client width.
+- Reproduce stale CSS in an isolated native Zotero `10.0.2` test: replacing the file, invalidating the startup cache, and re-adding the same stylesheet URL retained a 294-pixel visible popup; changing only the URL to include `?v=1.1.3` loaded the new rule and produced 190 CSS pixels. This controlled test did not inspect the user's profile.
+- Add acceptance of the exact Draft XPI while Zotero remains running, followed by restart and width/function regression checks. User acceptance and formal publication remain pending.
+
+## 1.1.2 — Unpublished candidate
+
+The user still reported an overly wide popup. Width acceptance failed; the candidate and its assets remain unpublished and preserved.
 
 - Constrain the native hash-tag panel's shadow content as well as its inner content, targeting a visible border-box width of 190–280 CSS pixels. Account for the host's 8-pixel shadow allowance, remove duplicate host padding, and cap inner content at 266 CSS pixels.
 - Retain the existing search, font size, row height, focus, selection, and editing behavior while correcting the width still reported in `1.1.1` acceptance.
 - Add an acceptance checklist for the exact `1.1.2` Draft XPI, with width checks across labels, search states, and display scales. Source and HTML layout checks do not establish native Zotero visual acceptance or fully confirm the cause of the reported width.
 
-Formal publication remains pending real Zotero acceptance. Earlier candidates remain unpublished with their assets preserved.
+This candidate is superseded by the `1.1.3` stylesheet-loading correction. Earlier candidates remain unpublished with their assets preserved.
 
 ## 1.1.1 — Unpublished candidate
 

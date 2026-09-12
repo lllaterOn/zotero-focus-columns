@@ -66,7 +66,10 @@ export class WindowUI {
   private readonly windows = new Set<any>();
   private menuRegistrationID: string | false | null = null;
 
-  constructor(private readonly publications: PublicationService) {}
+  constructor(
+    private readonly publications: PublicationService,
+    private readonly version: string
+  ) {}
 
   load(window: any): void {
     if (this.windows.has(window)) return;
@@ -94,7 +97,8 @@ export class WindowUI {
     const link = doc.createElementNS("http://www.w3.org/1999/xhtml", "link");
     link.id = STYLE_ID;
     link.setAttribute("rel", "stylesheet");
-    link.setAttribute("href", "chrome://focus-columns/content/style.css");
+    // Gecko can retain parsed chrome CSS after startupcache-invalidate during an upgrade.
+    link.setAttribute("href", `chrome://focus-columns/content/style.css?v=${encodeURIComponent(this.version)}`);
     doc.documentElement.appendChild(link);
   }
 

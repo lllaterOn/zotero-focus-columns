@@ -41,7 +41,7 @@ describe("publication update menu", () => {
       planClearItems: vi.fn(() => ({ publications: ["Nature"], skipped: 0 })),
       clearItems: vi.fn()
     };
-    const ui = new WindowUI(publications as any);
+    const ui = new WindowUI(publications as any, "1.0.0");
     const window = {
       ZoteroPane: { getSelectedItems: () => [{ isRegularItem: () => true }] }
     };
@@ -66,7 +66,7 @@ describe("publication update menu", () => {
       planClearItems: vi.fn(() => plan),
       clearItems: vi.fn().mockResolvedValue({ deleted: 2, skipped: 1, error: null })
     };
-    const ui = new WindowUI(publications as any);
+    const ui = new WindowUI(publications as any, "1.0.0");
     const window = {
       ZoteroPane: { getSelectedItems: () => [{ isRegularItem: () => true }] }
     };
@@ -110,5 +110,41 @@ describe("publication update menu", () => {
     expect(message).toBe("EasyScholar 密钥无效（代码 40002）。");
     expect(message).not.toContain("secretKey");
     expect(message).not.toContain("https://");
+  });
+});
+
+describe("window styles across upgrades", () => {
+  it("removes the old stylesheet and uses a different URL when upgrading in the same window", () => {
+    (globalThis as any).Zotero = {};
+    const children: any[] = [];
+    const doc = {
+      getElementById: (id: string) => children.find(node => node.id === id),
+      createElementNS: () => {
+        const node = {
+          id: "",
+          attributes: new Map<string, string>(),
+          setAttribute(name: string, value: string) { this.attributes.set(name, value); },
+          remove() { children.splice(children.indexOf(this), 1); }
+        };
+        return node;
+      },
+      documentElement: { appendChild: (node: any) => children.push(node) }
+    };
+    const window = { document: doc };
+    const previous = new WindowUI({} as any, "1.1.2");
+    previous.load(window);
+    const previousURL = children[0].attributes.get("href");
+    previous.shutdown();
+    expect(children).toHaveLength(0);
+
+    const upgraded = new WindowUI({} as any, "1.1.3");
+    upgraded.load(window);
+    upgraded.load(window);
+    expect(children).toHaveLength(1);
+    const newURL = children[0].attributes.get("href");
+    expect(newURL).not.toBe(previousURL);
+    expect(newURL).toBe("chrome://focus-columns/content/style.css?v=1.1.3");
+    upgraded.shutdown();
+    expect(children).toHaveLength(0);
   });
 });

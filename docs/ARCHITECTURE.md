@@ -10,6 +10,16 @@
 - `src/services/syncService.ts` and `src/domain/sync.ts` own local-note synchronization, validation, conflict decisions, and status reporting.
 - `addon/` contains the Zotero manifest, defaults, preferences UI, locale resources, styles, and bootstrap entry point.
 
+### Stylesheet Loading
+
+`WindowUI` receives the add-on version supplied to `startup` and loads `chrome://focus-columns/content/style.css?v=<encoded version>`. Changing the URI between releases prevents reuse of a previous version's parsed stylesheet during an upgrade without restarting Zotero. Removing the old link and sending `startupcache-invalidate` alone did not refresh that stylesheet in the controlled native test.
+
+For a focused regression, use an isolated Zotero profile and disposable copies of the plugin assets. Load the old CSS through the unversioned chrome URL, replace the temporary CSS file with the current CSS, invalidate the startup cache, and remove/re-add the same link. Then change only its URL to include the new version. Compare the loaded CSS rules and native panel's visible border-box width. Never modify a published XPI or use a personal profile for this fixture.
+
+In isolated headless Zotero `10.0.2`, this sequence retained the old 294 CSS-pixel visible panel and 280-pixel form at the unchanged URL; the versioned URL loaded the new `::part` rule and measured 190 and 176 CSS pixels respectively. The current CSS also produced a 190-pixel visible panel with short labels at font sizes 14, 16, and 20. These measurements verify the controlled cache reproduction, not the state of the user's profile or complete interactive acceptance.
+
+The hash-tag search field resets native margins to zero: its full width plus the native horizontal margins otherwise overflowed the form by 8 CSS pixels. The isolated native measurement changed from a 184-pixel scroll width with a 176-pixel client width to 176 for both, without changing popup width limits, font size, or row height.
+
 ## Stable Identity
 
 - Display name: `Focus Columns`

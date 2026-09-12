@@ -86,7 +86,7 @@ export class FocusColumnsPlugin {
       this.publications,
       this.columns
     );
-    this.windowUI = new WindowUI(this.publications);
+    this.windowUI = new WindowUI(this.publications, version);
 
     this.columns.sync();
     this.infoRows.sync();
