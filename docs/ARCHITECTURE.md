@@ -82,11 +82,15 @@ Custom sort keys contain only the primary value. They never append a Zotero item
 
 ## View Groups
 
+The toolbar uses an icon and Zotero's native dropdown arrow. The current group's name remains in the tooltip, accessible label, and checked menu entry, avoiding clipped text in Zotero's fixed-width toolbar menu buttons.
+
 Each group contains a stable ID, a name, and an ordered array of column keys with visibility flags. The groups' array order determines menu order. Saving or explicitly updating a group captures the current layout; ordinary column adjustments do not automatically rewrite its definition. Updating preserves definitions for columns unavailable on the current computer. Switching applies available columns only; unavailable columns can be restored by switching again after their provider is enabled.
 
 Definitions use the `viewGroups.definitions` preference. The separate `viewGroups.local` preference stores the active group ID and widths keyed by group ID and column key. These local values are excluded from synchronized settings and content hashes. A group without saved widths on this computer uses existing native widths. Renaming a group does not change its ID or associate it with another computer's widths.
 
 The layout adapter uses Zotero 10 item-tree column preferences and a column reset; it must preserve the effective primary sort and all secondary/fallback preferences without sorting rows, changing search or filters, or replacing the selection. A hidden sort column remains the sort column. Widths use native preference units rather than rendered cell widths, avoiding accumulated padding changes. Native primary-column visibility requirements remain in force.
+
+Saved widths are native layout bases, not fixed visible pixel widths. Zotero applies them as flexible column bases: opening a sidebar reduces available space and its normal layout shrinks eligible columns subject to minimum sizes; fixed/static columns do not participate. Sidebar and window resizing alone do not persist new group widths. Focus Columns does not intercept resize events or apply a different shrink policy.
 
 This integration depends on native item-tree methods rather than a public layout-preset API. Capability checks restrict capture and apply to supported library views. Recheck the adapter when Zotero changes; user acceptance covers library/collection changes, missing third-party columns, and different screen widths. Group definitions and local active state belong to the Zotero profile and are not saved per library or per window; native layout persistence still follows Zotero's own view groups.
 

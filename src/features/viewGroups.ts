@@ -20,7 +20,7 @@ export class ViewGroupController {
     button.id = BUTTON_ID;
     button.setAttribute("type", "menu");
     button.setAttribute("wantdropmarker", "true");
-    button.setAttribute("tooltiptext", tr("viewGroupsHint"));
+    button.setAttribute("image", "chrome://focus-columns/content/icons/focus-columns.svg");
     const popup = doc.createXULElement("menupopup");
     popup.addEventListener("popupshowing", (event: any) => {
       if (event.target === popup) this.fillMenu(window, popup);
@@ -51,6 +51,8 @@ export class ViewGroupController {
     }
     for (const { button } of this.windows.values()) {
       button.setAttribute("label", label);
+      button.setAttribute("aria-label", label);
+      button.setAttribute("tooltiptext", `${label}\n${tr("viewGroupsHint")}`);
       button.setAttribute("disabled", String(this.busy));
     }
   }

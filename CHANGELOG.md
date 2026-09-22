@@ -2,6 +2,12 @@
 
 All notable changes are recorded here. Releases follow semantic versioning.
 
+## 1.2.1 — Pending acceptance
+
+- Show the view-group toolbar control as a compact column icon with a dropdown arrow, fitting Zotero's native toolbar width. Keep the current view name in the tooltip, accessible label, and selected menu entry.
+- Explain that opening a sidebar uses Zotero's native flexible column sizing without overwriting saved view-group widths. No column sizing behavior changes in this patch.
+- Preserve the 1.2.0 Draft and prepare a separate XPI for user acceptance. The published update manifest remains unchanged.
+
 ## 1.2.0 — Pending acceptance
 
 - Add named view groups in the item-list toolbar, with save-as, manual update, rename, delete, and group-order actions. Switching restores column visibility and order plus locally saved widths while preserving sorting, search, filters, and item selection.

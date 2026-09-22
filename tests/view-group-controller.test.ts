@@ -314,6 +314,8 @@ describe("view-group controller", () => {
 
     const button = toolbar.children.find(node => node.id === "focus-columns-view-groups");
     expect(button?.getAttribute("label")).toBe("View: Remote reading");
+    expect(button?.getAttribute("aria-label")).toBe("View: Remote reading");
+    expect(button?.getAttribute("tooltiptext")).toBe("View: Remote reading\nSwitch column layouts. Update the view manually after changes. Column widths stay on this computer.");
     expect(layout.apply).not.toHaveBeenCalled();
     expect(readViewGroupLocalState().widthsByGroup.reading).toEqual({ title: 200 });
   });
