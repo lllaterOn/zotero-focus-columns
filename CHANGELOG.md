@@ -2,6 +2,13 @@
 
 All notable changes are recorded here. Releases follow semantic versioning.
 
+## 1.2.2 — Pending acceptance
+
+- Refresh item data without calling the native column-structure refresh, which reconstructed column widths after sync notifications. Keep the current layout and saved view widths separate whether or not a dragged width has been saved to the view.
+- Redraw row values and item-pane information after receiving publication data or display settings through synchronization. Remove the cache redraw listener during shutdown.
+- Redesign the shared plugin and toolbar icon with a thin outline, three column regions, and a focused middle column, using the surrounding interface color.
+- Add regressions for repeated sync notifications with saved and unsaved width changes, imported data/settings redraws, and listener cleanup. Retain older Draft assets and leave the published update manifest unchanged.
+
 ## 1.2.1 — Pending acceptance
 
 - Show the view-group toolbar control as a compact column icon with a dropdown arrow, fitting Zotero's native toolbar width. Keep the current view name in the tooltip, accessible label, and selected menu entry.

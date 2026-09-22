@@ -82,6 +82,14 @@ Custom sort keys contain only the primary value. They never append a Zotero item
 
 ## View Groups
 
+### Data Refresh Boundary
+
+Item and setting notifications, publication-cache changes, and imported display settings invalidate row data and redraw existing item trees through `invalidateRowCache(true)` and `tree.invalidate()`. They do not call `ItemTreeManager.refreshColumns()`: that emits a structural refresh, resets the native `Columns` object, and reinterprets persisted width bases after a user drag. Ordinary data updates must retain the current column objects, layout, and selection; they must not reapply the active view or save transient widths.
+
+The plugin subscribes to publication-cache changes so remote replacements redraw even without another item notification. The subscription and pending redraw timer are removed during shutdown. Native column registration changes and explicit view selection still use structural layout operations when required.
+
+### Saved Layouts
+
 The toolbar uses an icon and Zotero's native dropdown arrow. The current group's name remains in the tooltip, accessible label, and checked menu entry, avoiding clipped text in Zotero's fixed-width toolbar menu buttons.
 
 Each group contains a stable ID, a name, and an ordered array of column keys with visibility flags. The groups' array order determines menu order. Saving or explicitly updating a group captures the current layout; ordinary column adjustments do not automatically rewrite its definition. Updating preserves definitions for columns unavailable on the current computer. Switching applies available columns only; unavailable columns can be restored by switching again after their provider is enabled.

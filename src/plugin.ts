@@ -29,6 +29,7 @@ export class FocusColumnsPlugin {
   private notifierID: string | null = null;
   private reconfigureTimer: number | null = null;
   private refreshTimer: number | null = null;
+  private unsubscribeCache: (() => void) | null = null;
 
   private readonly prefObserver = {
     observe: (_subject: unknown, _topic: string, data: string) => {
@@ -92,6 +93,9 @@ export class FocusColumnsPlugin {
     );
     this.windowUI = new WindowUI(this.publications, version);
     this.viewGroups = new ViewGroupController();
+    // Includes publication data received through synchronization, which does
+    // not pass through PublicationService's local update callback.
+    this.unsubscribeCache = cache.onChange(() => this.refreshDataViews());
 
     this.columns.sync();
     this.infoRows.sync();
@@ -128,6 +132,7 @@ export class FocusColumnsPlugin {
     this.columns.sync();
     this.infoRows.sync();
     this.viewGroups?.refresh();
+    this.refreshDataViews();
   }
 
   validateAdvancedSettings = validateAdvancedSettings;
@@ -147,12 +152,15 @@ export class FocusColumnsPlugin {
   prepareShutdown = () => this.sync.stop();
 
   async shutdown(): Promise<void> {
+    this.unsubscribeCache?.();
+    this.unsubscribeCache = null;
     if (this.reconfigureTimer !== null) clearTimeout(this.reconfigureTimer);
-    if (this.refreshTimer !== null) clearTimeout(this.refreshTimer);
     Services.prefs.removeObserver(PREF_BRANCH, this.prefObserver);
     if (this.notifierID) Zotero.Notifier.unregisterObserver(this.notifierID);
     if (this.preferencePaneID) Zotero.PreferencePanes.unregister(this.preferencePaneID);
     await this.prepareShutdown();
+    if (this.refreshTimer !== null) clearTimeout(this.refreshTimer);
+    this.refreshTimer = null;
     this.publications.stop();
     this.viewGroups.shutdown();
     this.infoRows.shutdown();
