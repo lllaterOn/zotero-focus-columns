@@ -89,7 +89,7 @@ describe("Focus Columns synchronization data", () => {
     expect(() => parseSyncNote(damaged))
       .toThrowError(expect.objectContaining({ kind: "invalid" }));
 
-    const newer = `<pre>${SYNC_NOTE_MARKER}\n${JSON.stringify({ ...data, schemaVersion: 2 })}</pre>`;
+    const newer = `<pre>${SYNC_NOTE_MARKER}\n${JSON.stringify({ ...data, schemaVersion: 3 })}</pre>`;
     expect(() => parseSyncNote(newer))
       .toThrowError(expect.objectContaining({ kind: "newer-schema" }));
 
@@ -134,6 +134,44 @@ describe("Focus Columns synchronization data", () => {
     const html = `<pre>${SYNC_NOTE_MARKER}\n${JSON.stringify(data)}</pre>`;
 
     expect(() => parseSyncNote(html))
+      .toThrowError(expect.objectContaining({ kind: "invalid" }));
+  });
+
+  it("accepts group definitions only in schema 2 while retaining original channel hashes", () => {
+    const data = createSyncData("1.2.0");
+    data.channels.publications = createSyncedChannel(publications());
+    data.channels.settings = createSyncedChannel({
+      ...defaultSyncableSettings(),
+      viewGroups: [{ id: "reading", name: "Reading", columns: [{ key: "title", visible: true }] }]
+    });
+    expect(() => parseSyncNote(renderSyncNote(data)))
+      .toThrowError(expect.objectContaining({ kind: "invalid" }));
+
+    data.schemaVersion = 2;
+    expect(parseSyncNote(renderSyncNote(data))).toEqual(data);
+
+    const legacySettings = createSyncedChannel(defaultSyncableSettings());
+    data.channels.settings = legacySettings;
+    expect(parseSyncNote(renderSyncNote(data)).channels.settings).toEqual(legacySettings);
+    expect(parseSyncNote(renderSyncNote(data)).channels.settings?.data).not.toHaveProperty("viewGroups");
+  });
+
+  it("validates group payloads strictly and detects tampered group data", () => {
+    const data = createSyncData("1.2.0");
+    data.schemaVersion = 2;
+    const settings = {
+      ...defaultSyncableSettings(),
+      viewGroups: [{ id: "reading", name: "Reading", columns: [{ key: "title", visible: true }] }]
+    };
+    data.channels.settings = createSyncedChannel(settings);
+    expect(() => parseSyncNote(renderSyncNote(data).replace("Reading", "Changed")))
+      .toThrowError(expect.objectContaining({ kind: "invalid" }));
+
+    data.channels.settings = createSyncedChannel({
+      ...settings,
+      viewGroups: [{ ...settings.viewGroups[0], deviceID: "must-not-sync" }]
+    });
+    expect(() => parseSyncNote(renderSyncNote(data)))
       .toThrowError(expect.objectContaining({ kind: "invalid" }));
   });
 });

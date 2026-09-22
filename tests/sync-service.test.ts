@@ -2,7 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PREF_BRANCH, SYNC_CONTAINER_MARKER } from "../src/constants";
 import { createSyncedChannel, createSyncData, parseSyncNote, renderSyncNote } from "../src/domain/sync";
 import { SyncService } from "../src/services/syncService";
-import { defaultSyncableSettings } from "../src/settings";
+import { defaultSyncableSettings, readSyncableSettings } from "../src/settings";
+import {
+  readOptionalViewGroups,
+  readViewGroupLocalState,
+  writeViewGroups,
+  writeViewGroupLocalState
+} from "../src/services/viewGroupStore";
 import type { PublicationCacheFile } from "../src/types";
 
 function publications(rank = "Q1"): PublicationCacheFile {
@@ -56,7 +62,9 @@ describe("SyncService Zotero object workflow", () => {
       key: "SYNCNOTE",
       deleted: false,
       getNoteTitle: () => "Focus Columns",
-      getNote: () => noteHTML
+      getNote: () => noteHTML,
+      setNote: vi.fn((value: string) => { noteHTML = value; }),
+      saveTx: vi.fn(async () => 2)
     };
     items.set(1, container);
     items.set(2, note);
@@ -313,5 +321,162 @@ describe("SyncService Zotero object workflow", () => {
     });
     expect(preferences.get(`${PREF_BRANCH}easyscholar.autoFetchMissing`)).toBe(false);
     await service.stop();
+  });
+
+  it("does not rewrite legacy settings or upgrade the note when view groups have not been used", async () => {
+    setSyncPreferences(true, false, true);
+    const data = createSyncData("1.1.3");
+    data.channels.settings = createSyncedChannel(defaultSyncableSettings());
+    const original = renderSyncNote(data);
+    addExistingObjects(original);
+    const service = new SyncService(cache(publications()) as any, "1.2.0", vi.fn(), {
+      create: vi.fn(), latest: vi.fn()
+    } as any);
+
+    expect((await service.check(null, false)).state).toBe("ready");
+    expect(items.get(2).setNote).not.toHaveBeenCalled();
+    expect(items.get(2).getNote()).toBe(original);
+    expect(readSyncableSettings()).not.toHaveProperty("viewGroups");
+    expect(preferences.get(`${PREF_BRANCH}sync.runtime.settingsHead`)).toBe(data.channels.settings.contentHash);
+  });
+
+  it("upgrades the envelope only when publishing groups and preserves channel revisions and other data", async () => {
+    setSyncPreferences(true, true, true);
+    const data = createSyncData("1.1.3");
+    data.channels.settings = createSyncedChannel(defaultSyncableSettings());
+    data.channels.publications = createSyncedChannel(publications());
+    addExistingObjects(renderSyncNote(data));
+    preferences.set(`${PREF_BRANCH}sync.runtime.settingsHead`, data.channels.settings.contentHash);
+    writeViewGroups([{ id: "reading", name: "Reading", columns: [{ key: "title", visible: true }] }]);
+    const localState = { activeID: "reading", widthsByGroup: { reading: { title: 430 } } };
+    writeViewGroupLocalState(localState);
+    const service = new SyncService(cache(publications()) as any, "1.2.0", vi.fn(), {
+      create: vi.fn(), latest: vi.fn()
+    } as any);
+
+    expect((await service.check(null, false)).state).toBe("ready");
+    const updated = parseSyncNote(items.get(2).getNote());
+    expect(updated.schemaVersion).toBe(2);
+    expect(updated.channels.settings).toMatchObject({
+      revision: 2,
+      baseHash: data.channels.settings.contentHash,
+      data: readSyncableSettings()
+    });
+    expect(updated.channels.publications).toEqual(data.channels.publications);
+    expect(items.get(2).getNote()).not.toContain("widthsByGroup");
+    expect(items.get(2).getNote()).not.toContain("activeID");
+    expect(readViewGroupLocalState()).toEqual(localState);
+
+    await service.check(null, false);
+    expect(items.get(2).saveTx).toHaveBeenCalledOnce();
+  });
+
+  it("does not share groups or upgrade a legacy note when the settings channel is disabled", async () => {
+    setSyncPreferences(true, true, false);
+    const data = createSyncData("1.1.3");
+    data.channels.settings = createSyncedChannel(defaultSyncableSettings());
+    data.channels.publications = createSyncedChannel(publications());
+    addExistingObjects(renderSyncNote(data));
+    preferences.set(`${PREF_BRANCH}sync.runtime.publicationsHead`, data.channels.publications.contentHash);
+    writeViewGroups([{ id: "reading", name: "Reading", columns: [{ key: "title", visible: true }] }]);
+    const service = new SyncService(cache(publications("Q2")) as any, "1.2.0", vi.fn(), {
+      create: vi.fn(), latest: vi.fn()
+    } as any);
+
+    expect((await service.check(null, false)).state).toBe("ready");
+    const updated = parseSyncNote(items.get(2).getNote());
+    expect(updated.schemaVersion).toBe(1);
+    expect(updated.channels.settings).toEqual(data.channels.settings);
+    expect(updated.channels.publications?.data).toEqual(publications("Q2"));
+  });
+
+  it("imports schema 2 groups on a pristine computer without importing widths or the active group", async () => {
+    setSyncPreferences(true, false, true);
+    const data = createSyncData("1.2.0");
+    data.schemaVersion = 2;
+    const groups = [{ id: "reading", name: "Reading", columns: [{ key: "title", visible: true }] }];
+    data.channels.settings = createSyncedChannel({ ...defaultSyncableSettings(), viewGroups: groups });
+    addExistingObjects(renderSyncNote(data));
+    const localState = { activeID: null, widthsByGroup: { reading: { title: 210 } } };
+    writeViewGroupLocalState(localState);
+    const backups = { create: vi.fn(), latest: vi.fn() };
+    const imported = vi.fn();
+    const service = new SyncService(cache(publications()) as any, "1.2.0", imported, backups as any);
+
+    expect((await service.check(null, false)).state).toBe("ready");
+    expect(readOptionalViewGroups()).toEqual(groups);
+    expect(readViewGroupLocalState()).toEqual(localState);
+    expect(backups.create).toHaveBeenCalledWith("settings", defaultSyncableSettings());
+    expect(imported).toHaveBeenCalledOnce();
+    expect(items.get(2).saveTx).not.toHaveBeenCalled();
+    await service.check(null, false);
+    expect(imported).toHaveBeenCalledOnce();
+  });
+
+  it("requires a choice for new local groups and independently changed legacy settings", async () => {
+    setSyncPreferences(true, false, true);
+    const base = createSyncedChannel(defaultSyncableSettings());
+    const remote = createSyncedChannel({ ...defaultSyncableSettings(), autoFetchMissing: false }, base);
+    const data = createSyncData("1.1.3");
+    data.channels.settings = remote;
+    addExistingObjects(renderSyncNote(data));
+    preferences.set(`${PREF_BRANCH}sync.runtime.settingsHead`, base.contentHash);
+    const groups = [{ id: "reading", name: "Reading", columns: [{ key: "title", visible: true }] }];
+    writeViewGroups(groups);
+    const before = readSyncableSettings();
+    const backups = { create: vi.fn(), latest: vi.fn() };
+    const service = new SyncService(cache(publications()) as any, "1.2.0", vi.fn(), backups as any);
+
+    expect((await service.check(null, false)).state).toBe("conflict");
+    expect(items.get(2).saveTx).not.toHaveBeenCalled();
+    expect(readSyncableSettings()).toEqual(before);
+
+    // Choosing the legacy settings does not treat their absent group field as deletion.
+    expect((await service.check({}, true)).state).toBe("ready");
+    expect(Services.prompt.confirmEx).toHaveBeenCalledOnce();
+    expect(readOptionalViewGroups()).toEqual(groups);
+    expect(readSyncableSettings().autoFetchMissing).toBe(false);
+    expect(backups.create).toHaveBeenCalledWith("settings", before);
+    expect(items.get(2).saveTx).not.toHaveBeenCalled();
+    expect(preferences.get(`${PREF_BRANCH}sync.runtime.settingsHead`)).toBe(remote.contentHash);
+
+    // The preserved groups are subsequently published from the accepted legacy base.
+    expect((await service.check(null, false)).state).toBe("ready");
+    const updated = parseSyncNote(items.get(2).getNote());
+    expect(updated.schemaVersion).toBe(2);
+    expect(updated.channels.settings).toMatchObject({
+      revision: 3,
+      baseHash: remote.contentHash,
+      data: { ...remote.data, viewGroups: groups }
+    });
+  });
+
+  it("propagates an explicit group deletion without losing local widths or downgrading schema 2", async () => {
+    setSyncPreferences(true, false, true);
+    const groups = [{ id: "reading", name: "Reading", columns: [{ key: "title", visible: true }] }];
+    const base = createSyncedChannel({ ...defaultSyncableSettings(), viewGroups: groups });
+    const remote = createSyncedChannel({ ...defaultSyncableSettings(), viewGroups: [] }, base);
+    const data = createSyncData("1.2.0");
+    data.schemaVersion = 2;
+    data.channels.settings = remote;
+    addExistingObjects(renderSyncNote(data));
+    preferences.set(`${PREF_BRANCH}sync.runtime.settingsHead`, base.contentHash);
+    writeViewGroups(groups);
+    const localState = { activeID: "reading", widthsByGroup: { reading: { title: 210 } } };
+    writeViewGroupLocalState(localState);
+    const backups = { create: vi.fn(), latest: vi.fn() };
+    const service = new SyncService(cache(publications()) as any, "1.2.0", vi.fn(), backups as any);
+
+    expect((await service.check(null, false)).state).toBe("ready");
+    expect(readOptionalViewGroups()).toEqual([]);
+    expect(readViewGroupLocalState()).toEqual(localState);
+    expect(backups.create).toHaveBeenCalledWith("settings", base.data);
+
+    preferences.set(`${PREF_BRANCH}easyscholar.autoFetchMissing`, false);
+    expect((await service.check(null, false)).state).toBe("ready");
+    const updated = parseSyncNote(items.get(2).getNote());
+    expect(updated.schemaVersion).toBe(2);
+    expect(updated.channels.settings?.data.viewGroups).toEqual([]);
+    expect(updated.channels.settings?.baseHash).toBe(remote.contentHash);
   });
 });

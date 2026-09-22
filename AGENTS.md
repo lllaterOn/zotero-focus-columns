@@ -25,6 +25,7 @@
 
 ## Verification and Releases
 
+- Do not autonomously launch extra Zotero instances or control Zotero through Computer Use for testing, including empty or isolated profiles started from the command line. Continue source review, type checking, automated tests, builds, and XPI validation; deliver the Draft XPI for the user's Zotero acceptance.
 - Run `npm run verify` after every code change.
 - Keep `package.json`, `package-lock.json`, and `addon/manifest.json` on the same version.
 - Update `CHANGELOG.md` and the current manual acceptance checklist for each release.

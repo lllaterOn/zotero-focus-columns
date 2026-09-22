@@ -20,7 +20,7 @@ export interface SyncedChannel<T extends SyncChannelData> {
 }
 
 export interface FocusColumnsSyncData {
-  schemaVersion: 1;
+  schemaVersion: 1 | 2;
   pluginID: typeof PLUGIN_ID;
   pluginVersion: string;
   updatedAt: string;
@@ -168,9 +168,9 @@ function validSettings(value: unknown): value is SyncableSettings {
 function validateCurrent(value: unknown): FocusColumnsSyncData {
   if (!value || typeof value !== "object") throw new SyncDataError("invalid");
   const candidate = value as Partial<FocusColumnsSyncData>;
-  if (Number(candidate.schemaVersion) > 1) throw new SyncDataError("newer-schema");
+  if (Number(candidate.schemaVersion) > 2) throw new SyncDataError("newer-schema");
   if (!hasOnlyKeys(candidate, ["schemaVersion", "pluginID", "pluginVersion", "updatedAt", "channels"])
-    || candidate.schemaVersion !== 1
+    || (candidate.schemaVersion !== 1 && candidate.schemaVersion !== 2)
     || candidate.pluginID !== PLUGIN_ID
     || typeof candidate.pluginVersion !== "string"
     || typeof candidate.updatedAt !== "string"
@@ -189,6 +189,10 @@ function validateCurrent(value: unknown): FocusColumnsSyncData {
   }
   if (candidate.channels.settings
     && !validChannel(candidate.channels.settings, validSettings)) {
+    throw new SyncDataError("invalid");
+  }
+  if (candidate.schemaVersion === 1 && candidate.channels.settings
+    && Object.prototype.hasOwnProperty.call(candidate.channels.settings.data, "viewGroups")) {
     throw new SyncDataError("invalid");
   }
   return candidate as FocusColumnsSyncData;
@@ -234,6 +238,6 @@ export function parseSyncNote(html: string): FocusColumnsSyncData {
   catch {
     throw new SyncDataError("invalid");
   }
-  if (Number((parsed as any)?.schemaVersion) > 1) throw new SyncDataError("newer-schema");
+  if (Number((parsed as any)?.schemaVersion) > 2) throw new SyncDataError("newer-schema");
   return validateCurrent(parsed);
 }

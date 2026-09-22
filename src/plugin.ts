@@ -2,6 +2,7 @@ import { PLUGIN_ID, PREF_BRANCH } from "./constants";
 import { ColumnController } from "./features/columns";
 import { InfoRowController } from "./features/infoRows";
 import { WindowUI } from "./features/windowUI";
+import { ViewGroupController } from "./features/viewGroups";
 import { tr } from "./i18n";
 import {
   readSettings,
@@ -22,6 +23,7 @@ export class FocusColumnsPlugin {
   private columns!: ColumnController;
   private infoRows!: InfoRowController;
   private windowUI!: WindowUI;
+  private viewGroups!: ViewGroupController;
   private sync!: SyncService;
   private preferencePaneID: string | null = null;
   private notifierID: string | null = null;
@@ -46,10 +48,12 @@ export class FocusColumnsPlugin {
         || name === `${PREF_BRANCH}easyscholar.autoFetchMissing`
         || name === `${PREF_BRANCH}easyscholar.endpoint`
         || name.startsWith(`${PREF_BRANCH}publication.`)
-        || name.startsWith(`${PREF_BRANCH}hashTags.`);
+        || name.startsWith(`${PREF_BRANCH}hashTags.`)
+        || name === `${PREF_BRANCH}viewGroups.definitions`;
       if (syncableSetting) {
         this.sync?.localSettingsChanged();
       }
+      if (name.startsWith(`${PREF_BRANCH}viewGroups.`)) this.viewGroups?.refresh();
     }
   };
 
@@ -87,6 +91,7 @@ export class FocusColumnsPlugin {
       this.columns
     );
     this.windowUI = new WindowUI(this.publications, version);
+    this.viewGroups = new ViewGroupController();
 
     this.columns.sync();
     this.infoRows.sync();
@@ -110,9 +115,11 @@ export class FocusColumnsPlugin {
 
   async onMainWindowLoad(window: any): Promise<void> {
     this.windowUI.load(window);
+    this.viewGroups.load(window);
   }
 
   async onMainWindowUnload(window: any): Promise<void> {
+    this.viewGroups.unload(window);
     this.windowUI.unload(window);
   }
 
@@ -120,6 +127,7 @@ export class FocusColumnsPlugin {
     this.settings = readSettings();
     this.columns.sync();
     this.infoRows.sync();
+    this.viewGroups?.refresh();
   }
 
   validateAdvancedSettings = validateAdvancedSettings;
@@ -146,6 +154,7 @@ export class FocusColumnsPlugin {
     if (this.preferencePaneID) Zotero.PreferencePanes.unregister(this.preferencePaneID);
     await this.prepareShutdown();
     this.publications.stop();
+    this.viewGroups.shutdown();
     this.infoRows.shutdown();
     this.columns.shutdown();
     this.windowUI.shutdown();

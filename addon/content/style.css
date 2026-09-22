@@ -189,3 +189,13 @@
 .focus-columns-primary-button {
   font-weight: 600;
 }
+#focus-columns-view-groups {
+  max-width: 180px;
+  margin-inline: 4px;
+}
+
+#focus-columns-view-groups > .toolbarbutton-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

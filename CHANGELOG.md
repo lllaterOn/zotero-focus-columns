@@ -2,6 +2,14 @@
 
 All notable changes are recorded here. Releases follow semantic versioning.
 
+## 1.2.0 — Pending acceptance
+
+- Add named view groups in the item-list toolbar, with save-as, manual update, rename, delete, and group-order actions. Switching restores column visibility and order plus locally saved widths while preserving sorting, search, filters, and item selection.
+- Synchronize group names, group order, and column visibility/order through the existing settings channel. Keep each computer's widths and active group in separate local preferences. Preserve definitions for temporarily unavailable plugin columns when updating a group.
+- Support synchronization schema 2 for shared view groups. Both computers require Focus Columns 1.2.0 or later before synchronizing groups; older clients pause on the newer format. Unused view groups leave legacy settings and hashes unchanged, and reading a legacy settings snapshot does not delete local groups.
+- Retain whole-settings conflict choices and backups without silently merging group changes. Local widths and the active group never enter synchronized settings or their hashes.
+- Add a two-computer acceptance checklist for the exact Draft XPI, covering layout changes, local widths, synchronization compatibility, and existing-feature regressions. Formal publication awaits real Zotero acceptance; the public update manifest remains unchanged.
+
 ## 1.1.3 — 2026-09-12
 
 - Pass the startup version to `WindowUI` and include its encoded value in the stylesheet URL, preventing an in-session upgrade from reusing the previous version's parsed CSS. Popup width limits, font size, and row height are unchanged from `1.1.2`.
