@@ -24,6 +24,8 @@ Focus Columns 是一个面向 Zotero 10 的独立插件，为个人文献工作�
 
 打开侧边栏或缩小窗口时，Zotero 会根据可用空间伸缩列宽，普通列和本插件的四列都会参与，固定宽度的图标列除外。窄列受最小宽度限制，内容可能被截断。单纯开合侧栏不会改写视图组；保存的是本机的列宽基准，并非在任何窗口宽度下都锁定实际显示像素。
 
+`1.2.2` 将同步通知后的插件刷新改为更新行数据，避免普通数据刷新触发整套列布局重建。无论是否已“更新当前视图”，同步本身都不应重新应用视图或覆盖当前列宽。视图选择和列显隐调整仍按各自的原有流程执行。
+
 ### #标签选择
 
 选择一个标签会替换目标条目的全部 `#` 标签；“清除 #标签”会移除全部 `#` 标签。这两种操作均保留其他原生标签，保存后关闭弹窗，并支持撤销。弹窗只选择已有标签；新标签请通过 Zotero 原生标签面板创建。
@@ -97,4 +99,4 @@ dist/zotero-focus-columns-<version>.xpi
 拉取 main → 创建 codex/<task> → 修改并验证 → 提交并推送 → PR → 合并
 ```
 
-切换电脑前先提交并推送；另一台电脑开始工作前先拉取 `main`。详细合同见 [架构说明](docs/ARCHITECTURE.md) 和 [开发说明](docs/DEVELOPMENT.md)。当前维护候选为 `1.2.1`，Draft XPI 须按 [1.2.1 人工验收清单](docs/MANUAL_ACCEPTANCE_1.2.1.md) 检查后才能正式发布；自动检查不能替代真实 Zotero 验收。[1.1.3 仍为已正式发布版本](https://github.com/lllaterOn/zotero-focus-columns/releases/tag/v1.1.3)，其 [验收与发布记录](docs/MANUAL_ACCEPTANCE_1.1.3.md) 保留。`1.1.0`、`1.1.1`、`1.1.2`、`1.2.0` 候选及其清单保留且不正式发布。
+切换电脑前先提交并推送；另一台电脑开始工作前先拉取 `main`。详细合同见 [架构说明](docs/ARCHITECTURE.md) 和 [开发说明](docs/DEVELOPMENT.md)。当前维护候选为 `1.2.2`，Draft XPI 须按 [1.2.2 人工验收清单](docs/MANUAL_ACCEPTANCE_1.2.2.md) 检查后才能正式发布；自动检查不能替代真实 Zotero 验收。[1.1.3 仍为已正式发布版本](https://github.com/lllaterOn/zotero-focus-columns/releases/tag/v1.1.3)，其 [验收与发布记录](docs/MANUAL_ACCEPTANCE_1.1.3.md) 保留。`1.1.0`、`1.1.1`、`1.1.2`、`1.2.0`、`1.2.1` 候选及其清单保留且不正式发布。

@@ -79,7 +79,19 @@ export class ColumnController {
   }
 
   refresh(): void {
-    Zotero.ItemTreeManager.refreshColumns();
+    // refreshColumns() rebuilds the native Columns object, reinterpreting
+    // persisted widths after a drag. Data changes only need fresh row values.
+    for (const window of Zotero.getMainWindows()) {
+      const view = window.ZoteroPane?.itemsView;
+      if (!view?.tree) continue;
+      try {
+        view.invalidateRowCache(true);
+        view.tree.invalidate();
+      }
+      catch (error) {
+        Zotero.logError(error);
+      }
+    }
   }
 
   async saveRemark(item: any, value: string): Promise<void> {
