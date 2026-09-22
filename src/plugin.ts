@@ -103,7 +103,7 @@ export class FocusColumnsPlugin {
       pluginID: PLUGIN_ID,
       id: "focus-columns-preferences",
       label: tr("pluginName"),
-      image: rootURI + "content/icons/focus-columns.svg",
+      image: rootURI + "content/icons/focus-columns-app.svg",
       src: rootURI + "content/preferences.xhtml",
       scripts: [rootURI + "content/preferences.js"],
       stylesheets: [rootURI + "content/preferences.css"]

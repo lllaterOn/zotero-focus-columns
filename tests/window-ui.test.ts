@@ -15,8 +15,8 @@ describe("publication update menu", () => {
     expect(menu).toMatchObject({
       menuType: "menuitem",
       l10nID: "focus-columns-update-publication",
-      icon: "chrome://focus-columns/content/icons/focus-columns.svg",
-      darkIcon: "chrome://focus-columns/content/icons/focus-columns.svg"
+      icon: "chrome://focus-columns/content/icons/view-layout.svg",
+      darkIcon: "chrome://focus-columns/content/icons/view-layout.svg"
     });
   });
 
@@ -27,8 +27,8 @@ describe("publication update menu", () => {
     expect(menu).toMatchObject({
       menuType: "menuitem",
       l10nID: "focus-columns-delete-publication",
-      icon: "chrome://focus-columns/content/icons/focus-columns.svg",
-      darkIcon: "chrome://focus-columns/content/icons/focus-columns.svg"
+      icon: "chrome://focus-columns/content/icons/view-layout.svg",
+      darkIcon: "chrome://focus-columns/content/icons/view-layout.svg"
     });
   });
 

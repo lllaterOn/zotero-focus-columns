@@ -41,8 +41,8 @@ if (manifest.homepage_url !== "https://github.com/lllaterOn/zotero-focus-columns
 if (zotero.strict_min_version !== "10.0" || zotero.strict_max_version !== "10.0.*") {
   throw new Error("Unexpected Zotero compatibility range");
 }
-if (manifest.icons?.["48"] !== "content/icons/focus-columns.svg"
-  || manifest.icons?.["96"] !== "content/icons/focus-columns.svg") {
+if (manifest.icons?.["48"] !== "content/icons/focus-columns-app.svg"
+  || manifest.icons?.["96"] !== "content/icons/focus-columns-app.svg") {
   throw new Error("Missing Focus Columns plugin icons");
 }
 
@@ -50,7 +50,8 @@ for (const required of [
   "bootstrap.js",
   "prefs.js",
   "content/focus-columns.js",
-  "content/icons/focus-columns.svg",
+  "content/icons/focus-columns-app.svg",
+  "content/icons/view-layout.svg",
   "content/preferences.xhtml",
   "locale/en-US/focus-columns.ftl",
   "locale/zh-CN/focus-columns.ftl"
@@ -112,11 +113,16 @@ if (!/sync\.enabled", false/.test(defaults)
   throw new Error("Unexpected preference defaults");
 }
 
-const icon = await readFile(join(staging, "content", "icons", "focus-columns.svg"), "utf8");
-if (!/<svg\b[^>]*viewBox=["']0 0 24 24["']/i.test(icon)
-  || !/context-fill/i.test(icon)
-  || /(?:<image\b|@import|(?:href|xlink:href)\s*=|data:image)/i.test(icon)) {
-  throw new Error("Focus Columns icon does not satisfy the SVG resource contract");
+for (const [name, size, themed] of [
+  ["focus-columns-app.svg", 48, false],
+  ["view-layout.svg", 20, true]
+]) {
+  const icon = await readFile(join(staging, "content", "icons", name), "utf8");
+  if (!new RegExp(`<svg\\b[^>]*viewBox=["']0 0 ${size} ${size}["']`, "i").test(icon)
+    || /context-fill/i.test(icon) !== themed
+    || /(?:<image\b|@import|(?:href|xlink:href)\s*=|data:image)/i.test(icon)) {
+    throw new Error(`${name} does not satisfy the SVG resource contract`);
+  }
 }
 
 const githubTokenPattern = new RegExp(

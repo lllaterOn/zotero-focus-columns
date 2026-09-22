@@ -2,6 +2,13 @@
 
 All notable changes are recorded here. Releases follow semantic versioning.
 
+## 1.2.3 — Pending acceptance
+
+- Separate the blue app icon used by the add-on manager and preferences from a monochrome layout icon used by toolbar and menu controls. Use new resource filenames for the redesigned icons.
+- Match the native toolbar's 20-pixel icon size and use simpler column outlines without the previous central bar.
+- Stop assigning visible text to the icon-only view button. Set its accessible name and tooltip before inserting it, so delayed stylesheet loading cannot briefly expose a “View groups” label during startup.
+- Check button creation and reload without a stylesheet, and validate both icon resources in the XPI. Preserve the previous data-refresh fix, older Draft assets, and the published update manifest.
+
 ## 1.2.2 — Pending acceptance
 
 - Refresh item data without calling the native column-structure refresh, which reconstructed column widths after sync notifications. Keep the current layout and saved view widths separate whether or not a dragged width has been saved to the view.
