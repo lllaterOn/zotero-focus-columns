@@ -2,12 +2,13 @@
 
 All notable changes are recorded here. Releases follow semantic versioning.
 
-## 1.2.3 — Pending acceptance
+## 1.2.3 — 2026-09-22
 
 - Separate the blue app icon used by the add-on manager and preferences from a monochrome layout icon used by toolbar and menu controls. Use new resource filenames for the redesigned icons.
 - Match the native toolbar's 20-pixel icon size and use simpler column outlines without the previous central bar.
 - Stop assigning visible text to the icon-only view button. Set its accessible name and tooltip before inserting it, so delayed stylesheet loading cannot briefly expose a “View groups” label during startup.
-- Check button creation and reload without a stylesheet, and validate both icon resources in the XPI. Preserve the previous data-refresh fix, older Draft assets, and the published update manifest.
+- Check button creation and reload without a stylesheet, and validate both icon resources in the XPI. Preserve the previous data-refresh fix and older Draft assets.
+- Publish the same Draft XPI after the user's overall acceptance and explicit publication approval. Keep the default publication mappings unchanged. The user did not report individual results for every checklist item or both computers.
 
 ## 1.2.2 — Pending acceptance
 
