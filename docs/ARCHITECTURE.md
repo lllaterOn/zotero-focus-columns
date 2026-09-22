@@ -6,6 +6,7 @@
 - `src/features/columns.ts` registers the four item-tree columns and preserves Zotero's secondary and fallback sorting.
 - `src/features/infoRows.ts` registers the two official item-pane information rows.
 - `src/features/popovers.ts` and `src/features/render.ts` implement item-tree interaction and presentation.
+- `src/features/viewGroups.ts` owns the toolbar menu and explicit group actions; `viewGroupLayout.ts` isolates native item-tree layout access. `src/domain/viewGroups.ts` validates group definitions, and `src/services/viewGroupStore.ts` separates shared definitions from local widths and active-group state.
 - `src/services/publicationCache.ts`, `publicationService.ts`, and `easyScholar.ts` own publication data and external cache-miss requests.
 - `src/services/syncService.ts` and `src/domain/sync.ts` own local-note synchronization, validation, conflict decisions, and status reporting.
 - `addon/` contains the Zotero manifest, defaults, preferences UI, locale resources, styles, and bootstrap entry point.
@@ -79,6 +80,16 @@ The remark is one `remark:` line in the Zotero `Extra` field. Reads and writes m
 
 Custom sort keys contain only the primary value. They never append a Zotero item ID, so equal values continue through Zotero's configured secondary and fallback fields.
 
+## View Groups
+
+Each group contains a stable ID, a name, and an ordered array of column keys with visibility flags. The groups' array order determines menu order. Saving or explicitly updating a group captures the current layout; ordinary column adjustments do not automatically rewrite its definition. Updating preserves definitions for columns unavailable on the current computer. Switching applies available columns only; unavailable columns can be restored by switching again after their provider is enabled.
+
+Definitions use the `viewGroups.definitions` preference. The separate `viewGroups.local` preference stores the active group ID and widths keyed by group ID and column key. These local values are excluded from synchronized settings and content hashes. A group without saved widths on this computer uses existing native widths. Renaming a group does not change its ID or associate it with another computer's widths.
+
+The layout adapter uses Zotero 10 item-tree column preferences and a column reset; it must preserve the effective primary sort and all secondary/fallback preferences without sorting rows, changing search or filters, or replacing the selection. A hidden sort column remains the sort column. Widths use native preference units rather than rendered cell widths, avoiding accumulated padding changes. Native primary-column visibility requirements remain in force.
+
+This integration depends on native item-tree methods rather than a public layout-preset API. Capability checks restrict capture and apply to supported library views. Recheck the adapter when Zotero changes; user acceptance covers library/collection changes, missing third-party columns, and different screen widths. Group definitions and local active state belong to the Zotero profile and are not saved per library or per window; native layout persistence still follows Zotero's own view groups.
+
 ## Item Pane Boundary
 
 The item-pane rows use Zotero's official `ItemPaneInfoRow` API. Zotero 10 exposes only `start`, `afterCreators`, and `end`, and row renderers return strings. Exact placement after an arbitrary native field and colored inline badges would require private DOM integration and are intentionally outside the 1.0 contract.
@@ -87,16 +98,22 @@ The item-pane rows use Zotero's official `ItemPaneInfoRow` API. Zotero 10 expose
 
 Synchronization is opt-in and has independent publication and settings channels. Focus Columns reads and writes one visible child note under a marked software item in the personal library. Zotero itself performs network synchronization.
 
-The note payload uses internal `schemaVersion: 1` and contains:
+The note payload supports internal `schemaVersion: 1` and `2` and contains:
 
 - the stable plugin ID and plugin version;
 - an update time;
 - independently versioned publication and settings channels;
 - per-channel revision, update time, base content hash, current content hash, and full channel data.
 
-It does not contain a device identifier, EasyScholar key, synchronization switch, runtime item key, or backup. Unknown fields, foreign plugin IDs, invalid hashes, newer schemas, damaged content, and oversized content are rejected before any write.
+It does not contain a device identifier, EasyScholar key, synchronization switch, runtime item key, backup, view-group widths, or active view-group ID. Unknown fields, foreign plugin IDs, invalid hashes, newer schemas, damaged content, and oversized content are rejected before any write.
+
+Schema 1 retains the exact legacy settings representation. Schema 2 permits an optional `viewGroups` field in the existing settings channel; it adds no channel. The envelope upgrades only when an actual settings write publishes group definitions, including an explicitly empty group list. Installing the new version, leaving groups unused, or using groups with settings synchronization disabled does not upgrade a legacy note. An upgraded envelope is never downgraded.
+
+An absent `viewGroups` field describes no group state and must not erase existing local groups; an explicit empty list deletes the shared definitions. Absence is preserved in legacy hashes rather than normalized to an empty list. Schema-2 notes require Focus Columns 1.2.0 or later on both computers: older clients reject the whole newer envelope before channel selection and pause all Focus Columns synchronization with an upgrade message.
 
 Conflict direction is determined from the local content hash, last-known channel head, and remote content hash. When both sides changed, the user chooses one complete version. Channels remain independent, so one conflict does not prevent a safe update in the other channel.
+
+View groups participate in the existing whole-settings conflict and backup behavior. Changes on both sides require an explicit choice; groups are not silently merged. Applying legacy settings leaves undescribed groups intact, and a later settings write can publish those retained definitions. Restoring settings never replaces local widths or the active group.
 
 Disabling synchronization or uninstalling the plugin never deletes Zotero objects. A previously connected item or note that is missing or trashed blocks synchronization instead of triggering silent recreation.
 

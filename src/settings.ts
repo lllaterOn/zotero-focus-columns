@@ -1,5 +1,7 @@
 import { DEFAULT_MAP, DEFAULT_RANK_COLORS, PREF_BRANCH } from "./constants";
 import { parseCSV, parseMapRules } from "./domain/publication";
+import { validateViewGroups, type ViewGroup } from "./domain/viewGroups";
+import { readOptionalViewGroups, writeViewGroups } from "./services/viewGroupStore";
 import type { MapRule } from "./types";
 
 export interface SettingsSnapshot {
@@ -22,6 +24,8 @@ export interface SettingsSnapshot {
 }
 
 export interface SyncableSettings {
+  // Omitted by legacy settings; absence does not mean deleting local groups.
+  viewGroups?: ViewGroup[];
   features: {
     publicationColumn: boolean;
     hashTagsColumn: boolean;
@@ -158,7 +162,9 @@ export function readSettings(): SettingsSnapshot {
 
 export function readSyncableSettings(): SyncableSettings {
   const settings = readSettings();
+  const viewGroups = readOptionalViewGroups();
   return {
+    ...(viewGroups === undefined ? {} : { viewGroups }),
     features: {
       publicationColumn: settings.publicationColumn,
       hashTagsColumn: settings.hashTagsColumn,
@@ -179,7 +185,10 @@ export function readSyncableSettings(): SyncableSettings {
 }
 
 export function validateSyncableSettings(value: SyncableSettings): string[] {
-  if (!value || typeof value !== "object" || !value.features) return ["Invalid synced settings"];
+  if (!value || typeof value !== "object" || Array.isArray(value)
+    || !value.features || typeof value.features !== "object" || Array.isArray(value.features)) {
+    return ["Invalid synced settings"];
+  }
   const expectedTopLevel = [
     "features", "autoFetchMissing", "endpoint", "fields", "sort", "mapSource",
     "rankColors", "publicationDefaultColor", "hashTagsDefaultColor"
@@ -188,6 +197,9 @@ export function validateSyncableSettings(value: SyncableSettings): string[] {
     "publicationColumn", "hashTagsColumn", "statusColumn", "remarkColumn",
     "publicationInfoRow", "remarkInfoRow"
   ];
+  if (Object.prototype.hasOwnProperty.call(value, "viewGroups")) {
+    expectedTopLevel.push("viewGroups");
+  }
   if (Object.keys(value).sort().join("\n") !== expectedTopLevel.sort().join("\n")
     || Object.keys(value.features).sort().join("\n") !== expectedFeatures.sort().join("\n")) {
     return ["Unexpected synced setting"];
@@ -205,7 +217,7 @@ export function validateSyncableSettings(value: SyncableSettings): string[] {
     || typeof value.hashTagsDefaultColor !== "string") {
     return ["Invalid synced list settings"];
   }
-  return validateAdvancedSettings({
+  const errors = validateAdvancedSettings({
     fields: value.fields.join(","),
     sort: value.sort.join(","),
     map: String(value.mapSource || ""),
@@ -214,6 +226,10 @@ export function validateSyncableSettings(value: SyncableSettings): string[] {
     hashTagsDefaultColor: String(value.hashTagsDefaultColor || ""),
     endpoint: String(value.endpoint || "")
   });
+  if (Object.prototype.hasOwnProperty.call(value, "viewGroups")) {
+    errors.push(...validateViewGroups(value.viewGroups));
+  }
+  return errors;
 }
 
 export function writeSyncableSettings(value: SyncableSettings): void {
@@ -230,6 +246,7 @@ export function writeSyncableSettings(value: SyncableSettings): void {
   Zotero.Prefs.set(`${PREF_BRANCH}publication.rankColors`, value.rankColors.join(","), true);
   Zotero.Prefs.set(`${PREF_BRANCH}publication.defaultColor`, value.publicationDefaultColor, true);
   Zotero.Prefs.set(`${PREF_BRANCH}hashTags.defaultColor`, value.hashTagsDefaultColor, true);
+  if (value.viewGroups !== undefined) writeViewGroups(value.viewGroups);
 }
 
 export function readSyncPreferences(): SyncPreferences {

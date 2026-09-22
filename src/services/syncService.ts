@@ -487,6 +487,11 @@ export class SyncService {
     if (decision.action === "push") {
       const channel = createSyncedChannel(decision.local, decision.remote);
       (objects.data.channels as any)[decision.channel] = channel;
+      if (decision.channel === "settings"
+        && (decision.local as SyncableSettings).viewGroups !== undefined) {
+        // Keep legacy notes readable by old clients until groups are actually shared.
+        objects.data.schemaVersion = 2;
+      }
       objects.data.pluginVersion = this.pluginVersion;
       objects.data.updatedAt = new Date().toISOString();
       await this.saveNote(objects.note, objects.data);
