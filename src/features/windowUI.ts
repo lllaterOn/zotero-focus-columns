@@ -5,7 +5,7 @@ import type { PublicationService } from "../services/publicationService";
 
 const STYLE_ID = "focus-columns-stylesheet";
 const MENU_ID = "focus-columns-update-publication";
-const MENU_ICON = "chrome://focus-columns/content/icons/focus-columns.svg";
+const MENU_ICON = "chrome://focus-columns/content/icons/view-layout.svg";
 
 export function easyScholarErrorText(error: EasyScholarError): string {
   const values = { code: error.code || "" };

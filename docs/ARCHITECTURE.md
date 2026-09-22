@@ -92,6 +92,8 @@ The plugin subscribes to publication-cache changes so remote replacements redraw
 
 The toolbar uses an icon and Zotero's native dropdown arrow. The current group's name remains in the tooltip, accessible label, and checked menu entry, avoiding clipped text in Zotero's fixed-width toolbar menu buttons.
 
+The toolbar button never receives a visible `label`; its accessible name, tooltip, and image are set before insertion. Startup therefore does not depend on an asynchronously loaded stylesheet to hide text. `view-layout.svg` has a native 20-pixel canvas and inherits the control color through `context-fill`. The add-on manager and preference entry use a separate, colored `focus-columns-app.svg`. These resource paths replace the old shared icon, without loading sibling plugins or adding runtime dependencies.
+
 Each group contains a stable ID, a name, and an ordered array of column keys with visibility flags. The groups' array order determines menu order. Saving or explicitly updating a group captures the current layout; ordinary column adjustments do not automatically rewrite its definition. Updating preserves definitions for columns unavailable on the current computer. Switching applies available columns only; unavailable columns can be restored by switching again after their provider is enabled.
 
 Definitions use the `viewGroups.definitions` preference. The separate `viewGroups.local` preference stores the active group ID and widths keyed by group ID and column key. These local values are excluded from synchronized settings and content hashes. A group without saved widths on this computer uses existing native widths. Renaming a group does not change its ID or associate it with another computer's widths.

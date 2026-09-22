@@ -313,7 +313,7 @@ describe("view-group controller", () => {
     controller.refresh();
 
     const button = toolbar.children.find(node => node.id === "focus-columns-view-groups");
-    expect(button?.getAttribute("label")).toBe("View: Remote reading");
+    expect(button?.getAttribute("label")).toBeNull();
     expect(button?.getAttribute("aria-label")).toBe("View: Remote reading");
     expect(button?.getAttribute("tooltiptext")).toBe("View: Remote reading\nSwitch column layouts. Update the view manually after changes. Column widths stay on this computer.");
     expect(layout.apply).not.toHaveBeenCalled();
@@ -334,9 +334,19 @@ describe("view-group controller", () => {
     expect(logError).toHaveBeenCalledOnce();
   });
 
-  it("does not create duplicate toolbar controls across load, unload, and reload", () => {
+  it("mounts an accessible icon-only button before CSS loads, including after reload", () => {
     const { window, toolbar } = fixture();
     const controller = new ViewGroupController();
+    // This fixture loads no stylesheet. Inspect each button before DOM insertion.
+    const insert = toolbar.insertBefore.bind(toolbar);
+    const mounted = vi.spyOn(toolbar, "insertBefore").mockImplementation((button, before) => {
+      expect(button.getAttribute("label")).toBeNull();
+      expect(button.getAttribute("aria-label")).toBe("View groups");
+      expect(button.getAttribute("tooltiptext")).toContain("Switch column layouts.");
+      expect(button.getAttribute("image")).toBe("chrome://focus-columns/content/icons/view-layout.svg");
+      expect(button.getAttribute("type")).toBe("menu");
+      return insert(button, before);
+    });
 
     controller.load(window);
     controller.load(window);
@@ -347,6 +357,7 @@ describe("view-group controller", () => {
 
     controller.load(window);
     expect(toolbar.children.filter(node => node.id === "focus-columns-view-groups")).toHaveLength(1);
+    expect(mounted).toHaveBeenCalledTimes(2);
   });
 
   it("reports corrupt definitions without overwriting them or the current layout", () => {

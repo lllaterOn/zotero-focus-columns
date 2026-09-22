@@ -1,13 +1,13 @@
 {
   "manifest_version": 2,
   "name": "Focus Columns",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Focused publication-rank, hash-tag, status, and remark columns for Zotero 10.",
   "homepage_url": "https://github.com/lllaterOn/zotero-focus-columns",
   "author": "lllaterOn",
   "icons": {
-    "48": "content/icons/focus-columns.svg",
-    "96": "content/icons/focus-columns.svg"
+    "48": "content/icons/focus-columns-app.svg",
+    "96": "content/icons/focus-columns-app.svg"
   },
   "applications": {
     "zotero": {

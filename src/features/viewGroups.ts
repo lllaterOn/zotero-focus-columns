@@ -20,15 +20,15 @@ export class ViewGroupController {
     button.id = BUTTON_ID;
     button.setAttribute("type", "menu");
     button.setAttribute("wantdropmarker", "true");
-    button.setAttribute("image", "chrome://focus-columns/content/icons/focus-columns.svg");
+    button.setAttribute("image", "chrome://focus-columns/content/icons/view-layout.svg");
     const popup = doc.createXULElement("menupopup");
     popup.addEventListener("popupshowing", (event: any) => {
       if (event.target === popup) this.fillMenu(window, popup);
     });
     button.appendChild(popup);
-    toolbar.insertBefore(button, toolbar.querySelector("spacer") || null);
     this.windows.set(window, { button, popup });
     this.refresh();
+    toolbar.insertBefore(button, toolbar.querySelector("spacer") || null);
   }
 
   unload(window: any): void {
@@ -50,7 +50,7 @@ export class ViewGroupController {
       // Leave malformed saved data intact. Opening the menu explains the error.
     }
     for (const { button } of this.windows.values()) {
-      button.setAttribute("label", label);
+      // Do not create visible text and then hide it with asynchronously loaded CSS.
       button.setAttribute("aria-label", label);
       button.setAttribute("tooltiptext", `${label}\n${tr("viewGroupsHint")}`);
       button.setAttribute("disabled", String(this.busy));
