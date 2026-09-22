@@ -99,4 +99,4 @@ dist/zotero-focus-columns-<version>.xpi
 拉取 main → 创建 codex/<task> → 修改并验证 → 提交并推送 → PR → 合并
 ```
 
-切换电脑前先提交并推送；另一台电脑开始工作前先拉取 `main`。详细合同见 [架构说明](docs/ARCHITECTURE.md) 和 [开发说明](docs/DEVELOPMENT.md)。当前维护候选为 `1.2.3`，Draft XPI 须按 [1.2.3 人工验收清单](docs/MANUAL_ACCEPTANCE_1.2.3.md) 检查后才能正式发布；自动检查不能替代真实 Zotero 验收。[1.1.3 仍为已正式发布版本](https://github.com/lllaterOn/zotero-focus-columns/releases/tag/v1.1.3)，其 [验收与发布记录](docs/MANUAL_ACCEPTANCE_1.1.3.md) 保留。`1.1.0`、`1.1.1`、`1.1.2`、`1.2.0`、`1.2.1`、`1.2.2` 候选及其清单保留且不正式发布。
+切换电脑前先提交并推送；另一台电脑开始工作前先拉取 `main`。详细合同见 [架构说明](docs/ARCHITECTURE.md) 和 [开发说明](docs/DEVELOPMENT.md)。当前正式版本为 [1.2.3](https://github.com/lllaterOn/zotero-focus-columns/releases/tag/v1.2.3)，用户确认测试无问题并批准发布后，沿用已验收的 Draft XPI，未重建或替换资产；期刊标签默认映射保持不变。[1.2.3 验收与发布记录](docs/MANUAL_ACCEPTANCE_1.2.3.md) 区分整体验收与未逐项报告的结果。`1.1.0`、`1.1.1`、`1.1.2`、`1.2.0`、`1.2.1`、`1.2.2` 候选及其清单保留且不正式发布。
