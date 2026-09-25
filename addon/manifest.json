@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Focus Columns",
-  "version": "1.2.3",
-  "description": "Focused publication-rank, hash-tag, status, and remark columns for Zotero 10.",
+  "name": "Zotero Focus Columns",
+  "version": "1.2.4",
+  "description": "为文献列表添加期刊排名、哈希标签、状态和备注等自定义列。",
   "homepage_url": "https://github.com/lllaterOn/zotero-focus-columns",
   "author": "lllaterOn",
   "icons": {

@@ -2,6 +2,12 @@
 
 All notable changes are recorded here. Releases follow semantic versioning.
 
+## 1.2.4 — 2026-09-25
+
+- Rename the add-on manager entry to `Zotero Focus Columns`, keeping the add-on ID, preferences, synchronization markers, and stored data unchanged.
+- Replace the add-on manager description with a concise Chinese summary of the publication-rank, hash-tag, status, and remark columns.
+- Publish this metadata-only patch after automated verification and exact release-asset validation. The user explicitly approved direct publication without a separate real-Zotero acceptance pass.
+
 ## 1.2.3 — 2026-09-22
 
 - Separate the blue app icon used by the add-on manager and preferences from a monochrome layout icon used by toolbar and menu controls. Use new resource filenames for the redesigned icons.

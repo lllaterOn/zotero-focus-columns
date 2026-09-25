@@ -23,7 +23,7 @@ The hash-tag search field resets native margins to zero: its full width plus the
 
 ## Stable Identity
 
-- Display name: `Focus Columns`
+- Display name: `Zotero Focus Columns`
 - Add-on ID: `focus-columns@lllateron.github.io`
 - Preference branch: `extensions.zotero.lllateron.focusColumns.*`
 - Persistent cache: `focus-columns-publications.json`
