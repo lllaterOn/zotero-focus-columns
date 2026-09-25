@@ -1,13 +1,13 @@
 {
   "name": "zotero-focus-columns",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "private": true,
   "type": "module",
   "license": "MIT",
   "engines": {
     "node": ">=22"
   },
-  "description": "A small Zotero 10 plugin for publication ranks, hash tags, reading status, and remarks.",
+  "description": "为文献列表添加期刊排名、哈希标签、状态和备注等自定义列。",
   "scripts": {
     "clean": "node scripts/clean.mjs",
     "typecheck": "tsc --noEmit",
